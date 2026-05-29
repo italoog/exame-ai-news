@@ -1,17 +1,31 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Search, X } from 'lucide-react'
 import { useArticles } from '@/shared/hooks/use-articles'
 import { ArticleCard } from '@/shared/ui/article-card'
 import { ArticleCardSkeleton } from '@/shared/ui/skeleton'
 
 export default function SearchClient() {
-  const [query, setQuery] = useState('')
-  const [submitted, setSubmitted] = useState('')
+  const searchParams = useSearchParams()
+  const initialQ = searchParams.get('q') ?? ''
+  const initialTag = searchParams.get('tag') ?? ''
+  const [query, setQuery] = useState(initialQ)
+  const [submitted, setSubmitted] = useState(initialQ)
+  const [activeTag, setActiveTag] = useState(initialTag)
   const [, startTransition] = useTransition()
+
+  useEffect(() => {
+    const q = searchParams.get('q') ?? ''
+    const tag = searchParams.get('tag') ?? ''
+    setQuery(q)
+    setSubmitted(q)
+    setActiveTag(tag)
+  }, [searchParams])
 
   const { data, isLoading } = useArticles({
     search: submitted || undefined,
+    tag: activeTag || undefined,
     status: 'PUBLISHED',
     limit: 12,
   })
@@ -51,11 +65,13 @@ export default function SearchClient() {
         )}
       </form>
 
-      {submitted && (
+      {(submitted || activeTag) && (
         <p className="text-sm text-zinc-500 mb-6">
           {isLoading
             ? 'Buscando...'
-            : `${data?.meta.total ?? 0} resultados para "${submitted}"`}
+            : activeTag
+              ? `${data?.meta.total ?? 0} artigos com a tag #${activeTag}`
+              : `${data?.meta.total ?? 0} resultados para "${submitted}"`}
         </p>
       )}
 
@@ -71,7 +87,7 @@ export default function SearchClient() {
             <ArticleCard key={a.id} article={a} />
           ))}
         </div>
-      ) : submitted ? (
+      ) : (submitted || activeTag) ? (
         <div className="text-center py-20 text-zinc-400">
           <Search className="h-12 w-12 mx-auto mb-4 opacity-30" />
           <p className="text-lg">Nenhum resultado encontrado</p>

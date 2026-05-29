@@ -10,9 +10,6 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-lg">E</span>
-            </div>
             <span className="font-black text-zinc-900 text-2xl tracking-tight">
               EXAME <span className="text-red-600">AI</span>
             </span>

@@ -1,7 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useAuthStore } from '@/shared/stores/auth.store'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { useAuthStore, useAuthHydrated } from '@/shared/stores/auth.store'
 import {
   LayoutDashboard,
   Newspaper,
@@ -16,15 +17,26 @@ const NAV_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore()
+  const hydrated = useAuthHydrated()
   const pathname = usePathname()
+  const router = useRouter()
 
-  if (!user || user.role !== 'ADMIN') {
+  useEffect(() => {
+    if (!hydrated) return
+    if (!user) { router.replace('/auth/login'); return }
+    if (user.role !== 'ADMIN') router.replace('/')
+  }, [hydrated, user, router])
+
+  // Aguarda hidratação
+  if (!hydrated || !user) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-zinc-500">Acesso restrito a administradores.</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
+
+  if (user.role !== 'ADMIN') return null
 
   return (
     <div className="flex min-h-screen bg-zinc-50">

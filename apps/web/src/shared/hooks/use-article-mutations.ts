@@ -1,7 +1,6 @@
 'use client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/shared/lib/api'
-import { useRouter } from 'next/navigation'
 
 export interface CreateArticleData {
   title: string
@@ -15,13 +14,12 @@ export interface CreateArticleData {
 
 export function useCreateArticle() {
   const qc = useQueryClient()
-  const router = useRouter()
   return useMutation({
     mutationFn: (data: CreateArticleData) =>
       api.post('/articles', data).then((r) => r.data),
-    onSuccess: (res: { data: { slug: string } }) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] })
-      router.push(`/articles/${res.data.slug}`)
+      qc.invalidateQueries({ queryKey: ['admin-articles'] })
     },
   })
 }
@@ -33,6 +31,7 @@ export function useUpdateArticle(id: string) {
       api.patch(`/articles/${id}`, data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] })
+      qc.invalidateQueries({ queryKey: ['admin-articles'] })
     },
   })
 }
@@ -44,6 +43,31 @@ export function usePublishArticle() {
       api.patch(`/articles/${id}/publish`).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['articles'] })
+      qc.invalidateQueries({ queryKey: ['admin-articles'] })
+    },
+  })
+}
+
+export function useUnpublishArticle() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.patch(`/articles/${id}/unpublish`).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['articles'] })
+      qc.invalidateQueries({ queryKey: ['admin-articles'] })
+    },
+  })
+}
+
+export function useArchiveArticle() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.patch(`/articles/${id}/archive`).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['articles'] })
+      qc.invalidateQueries({ queryKey: ['admin-articles'] })
     },
   })
 }

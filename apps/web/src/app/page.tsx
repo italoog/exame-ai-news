@@ -27,8 +27,9 @@ async function fetchFeatured(): Promise<Article | null> {
   try {
     const res = await fetch(`${API}/api/articles/featured`, { next: { revalidate: 60 } })
     if (!res.ok) return null
-    const json = await res.json() as { data: Article[] }
-    return json.data?.[0] ?? null
+    const json = await res.json() as Article[] | { data: Article[] }
+    const list = Array.isArray(json) ? json : (json.data ?? [])
+    return list[0] ?? null
   } catch { return null }
 }
 
@@ -45,8 +46,8 @@ async function fetchTrending(): Promise<Article[]> {
   try {
     const res = await fetch(`${API}/api/articles/trending`, { next: { revalidate: 300 } })
     if (!res.ok) return []
-    const json = await res.json() as { data: Article[] }
-    return json.data ?? []
+    const json = await res.json() as Article[] | { data: Article[] }
+    return Array.isArray(json) ? json : (json.data ?? [])
   } catch { return [] }
 }
 

@@ -2,15 +2,19 @@
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useRouter } from 'next/navigation'
 import { RichTextEditor } from '@/shared/ui/rich-text-editor'
 import { useCategories } from '@/shared/hooks/use-categories'
 import {
   useCreateArticle,
   useUpdateArticle,
   usePublishArticle,
+  useUnpublishArticle,
+  useArchiveArticle,
 } from '@/shared/hooks/use-article-mutations'
+import { toast } from '@/shared/ui/toast'
 import { useState } from 'react'
-import { X, Save, Send, ImageIcon } from 'lucide-react'
+import { X, Save, Send, ImageIcon, ArchiveIcon, EyeOff } from 'lucide-react'
 
 const articleSchema = z.object({
   title: z.string().min(5, 'TÃ­tulo muito curto').max(200, 'TÃ­tulo muito longo'),
@@ -28,12 +32,15 @@ interface Props {
 }
 
 export default function EditorForm({ initialData }: Props) {
+  const router = useRouter()
   const [tags, setTags] = useState<string[]>(initialData?.tags ?? [])
   const [tagInput, setTagInput] = useState('')
   const { data: categoriesData } = useCategories()
   const createArticle = useCreateArticle()
   const updateArticle = useUpdateArticle(initialData?.id ?? '')
   const publishArticle = usePublishArticle()
+  const unpublishArticle = useUnpublishArticle()
+  const archiveArticle = useArchiveArticle()
 
   const categories = categoriesData?.data ?? []
 
@@ -75,19 +82,51 @@ export default function EditorForm({ initialData }: Props) {
   }
 
   async function onSaveDraft(data: ArticleForm) {
-    if (initialData?.id) {
-      await updateArticle.mutateAsync({ ...data, tags, status: 'DRAFT' })
-    } else {
-      await createArticle.mutateAsync({ ...data, tags, status: 'DRAFT' })
+    try {
+      if (initialData?.id) {
+        await updateArticle.mutateAsync({ ...data, tags, status: 'DRAFT' })
+      } else {
+        await createArticle.mutateAsync({ ...data, tags, status: 'DRAFT' })
+      }
+      toast('Rascunho salvo com sucesso!')
+    } catch {
+      toast('Erro ao salvar rascunho.', 'error')
     }
   }
 
   async function onPublish(data: ArticleForm) {
-    if (initialData?.id) {
-      await updateArticle.mutateAsync({ ...data, tags })
-      await publishArticle.mutateAsync(initialData.id)
-    } else {
-      await createArticle.mutateAsync({ ...data, tags, status: 'PUBLISHED' })
+    try {
+      if (initialData?.id) {
+        await updateArticle.mutateAsync({ ...data, tags })
+        await publishArticle.mutateAsync(initialData.id)
+      } else {
+        await createArticle.mutateAsync({ ...data, tags, status: 'PUBLISHED' })
+      }
+      toast('Artigo publicado com sucesso!')
+      router.back()
+    } catch {
+      toast('Erro ao publicar artigo.', 'error')
+    }
+  }
+
+  async function onUnpublish() {
+    if (!initialData?.id) return
+    try {
+      await unpublishArticle.mutateAsync(initialData.id)
+      toast('Publicação removida. Artigo voltou para rascunho.')
+    } catch {
+      toast('Erro ao remover publicação.', 'error')
+    }
+  }
+
+  async function onArchive() {
+    if (!initialData?.id) return
+    try {
+      await archiveArticle.mutateAsync(initialData.id)
+      toast('Artigo arquivado.')
+      router.back()
+    } catch {
+      toast('Erro ao arquivar artigo.', 'error')
     }
   }
 
@@ -106,6 +145,30 @@ export default function EditorForm({ initialData }: Props) {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {initialData?.id && initialData.status !== 'ARCHIVED' && (
+            <button
+              type="button"
+              onClick={onArchive}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-500 dark:text-zinc-400 hover:border-red-300 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 transition-colors"
+              title="Arquivar artigo"
+            >
+              <ArchiveIcon className="h-4 w-4" />
+              Arquivar
+            </button>
+          )}
+          {initialData?.id && initialData.status === 'PUBLISHED' && (
+            <button
+              type="button"
+              onClick={onUnpublish}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-500 dark:text-zinc-400 hover:border-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-400 disabled:opacity-50 transition-colors"
+              title="Remover publicação (volta para rascunho)"
+            >
+              <EyeOff className="h-4 w-4" />
+              Despublicar
+            </button>
+          )}
           <button
             type="button"
             onClick={handleSubmit(onSaveDraft)}

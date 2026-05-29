@@ -114,11 +114,6 @@ export class ArticlesService {
 
     if (!article) throw new NotFoundException('Artigo não encontrado')
 
-    const authorId = (article.author as { id: string }).id
-    if (userRole !== Role.ADMIN && authorId !== userId) {
-      throw new ForbiddenException('Sem permissão para editar este artigo')
-    }
-
     return article
   }
 
@@ -143,18 +138,18 @@ export class ArticlesService {
   async create(dto: CreateArticleDto, authorId: string) {
     const slug = await this.generateUniqueSlug(dto.title)
     const { tags, ...rest } = dto
+    const tagIds = tags && tags.length > 0 ? await this.resolveTagIds(tags) : []
 
     const article = await this.prisma.article.create({
       data: {
         ...rest,
         slug,
         authorId,
-        ...(tags &&
-          tags.length > 0 && {
-            tags: {
-              create: tags.map((tagId) => ({ tag: { connect: { id: tagId } } })),
-            },
-          }),
+        ...(tagIds.length > 0 && {
+          tags: {
+            create: tagIds.map((id) => ({ tag: { connect: { id } } })),
+          },
+        }),
       },
       select: ARTICLE_SELECT,
     })
@@ -169,19 +164,17 @@ export class ArticlesService {
   async update(id: string, dto: UpdateArticleDto, userId: string, userRole: Role) {
     const article = await this.prisma.article.findUnique({ where: { id } })
     if (!article) throw new NotFoundException('Artigo não encontrado')
-    if (article.authorId !== userId && userRole !== Role.ADMIN) {
-      throw new ForbiddenException('Sem permissão para editar este artigo')
-    }
 
     const { tags, ...rest } = dto
+    const tagIds = tags !== undefined ? await this.resolveTagIds(tags) : undefined
     return this.prisma.article.update({
       where: { id },
       data: {
         ...rest,
-        ...(tags !== undefined && {
+        ...(tagIds !== undefined && {
           tags: {
             deleteMany: {},
-            create: tags.map((tagId) => ({ tag: { connect: { id: tagId } } })),
+            create: tagIds.map((id) => ({ tag: { connect: { id } } })),
           },
         }),
       },
@@ -192,9 +185,6 @@ export class ArticlesService {
   async publish(id: string, userId: string, userRole: Role) {
     const article = await this.prisma.article.findUnique({ where: { id } })
     if (!article) throw new NotFoundException('Artigo não encontrado')
-    if (article.authorId !== userId && userRole !== Role.ADMIN) {
-      throw new ForbiddenException('Sem permissão')
-    }
 
     const updated = await this.prisma.article.update({
       where: { id },
@@ -216,6 +206,28 @@ export class ArticlesService {
     return updated
   }
 
+  async unpublish(id: string) {
+    const article = await this.prisma.article.findUnique({ where: { id } })
+    if (!article) throw new NotFoundException('Artigo não encontrado')
+
+    return this.prisma.article.update({
+      where: { id },
+      data: { status: ArticleStatus.DRAFT, publishedAt: null },
+      select: ARTICLE_SELECT,
+    })
+  }
+
+  async archive(id: string) {
+    const article = await this.prisma.article.findUnique({ where: { id } })
+    if (!article) throw new NotFoundException('Artigo não encontrado')
+
+    return this.prisma.article.update({
+      where: { id },
+      data: { status: ArticleStatus.ARCHIVED },
+      select: ARTICLE_SELECT,
+    })
+  }
+
   async remove(id: string, userId: string, userRole: Role) {
     const article = await this.prisma.article.findUnique({ where: { id } })
     if (!article) throw new NotFoundException('Artigo não encontrado')
@@ -226,7 +238,24 @@ export class ArticlesService {
     return this.prisma.article.update({
       where: { id },
       data: { status: ArticleStatus.ARCHIVED },
+      select: ARTICLE_SELECT,
     })
+  }
+
+  /** Recebe nomes/slugs de tags, faz upsert e retorna os IDs */
+  private async resolveTagIds(tagNames: string[]): Promise<string[]> {
+    const ids: string[] = []
+    for (const raw of tagNames) {
+      const slug = raw.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      if (!slug) continue
+      const tag = await this.prisma.tag.upsert({
+        where: { slug },
+        update: {},
+        create: { name: raw.trim(), slug },
+      })
+      ids.push(tag.id)
+    }
+    return ids
   }
 
   private async generateUniqueSlug(title: string): Promise<string> {

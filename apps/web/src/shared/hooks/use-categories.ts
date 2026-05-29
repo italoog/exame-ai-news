@@ -12,16 +12,26 @@ export interface Category {
 }
 
 export function useCategories() {
-  return useQuery<{ data: Category[] }>({
+  return useQuery({
     queryKey: ['categories'],
-    queryFn: () => api.get('/categories').then((r) => r.data),
+    queryFn: async () => {
+      const r = await api.get('/categories')
+      const raw = r.data
+      const list: Category[] = Array.isArray(raw) ? raw : (raw?.data ?? [])
+      return { data: list }
+    },
     staleTime: 1000 * 60 * 10,
   })
 }
 
 export function useCategory(slug: string) {
-  return useQuery<{ data: Category }>({
+  return useQuery({
     queryKey: ['category', slug],
-    queryFn: () => api.get(`/categories/${slug}`).then((r) => r.data),
+    queryFn: async () => {
+      const r = await api.get(`/categories/${slug}`)
+      const raw = r.data
+      const category: Category = raw?.data ?? raw
+      return { data: category }
+    },
   })
 }

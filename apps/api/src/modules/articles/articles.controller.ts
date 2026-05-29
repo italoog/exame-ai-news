@@ -107,6 +107,24 @@ export class ArticlesController {
     return this.articlesService.publish(id, user.id, user.role)
   }
 
+  @Patch(':id/unpublish')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Remover publicação (volta para rascunho)' })
+  unpublish(@Param('id') id: string) {
+    return this.articlesService.unpublish(id)
+  }
+
+  @Patch(':id/archive')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Arquivar artigo' })
+  archive(@Param('id') id: string) {
+    return this.articlesService.archive(id)
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EDITOR, Role.ADMIN)

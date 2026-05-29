@@ -58,6 +58,8 @@ export const metadata: Metadata = {
   },
 }
 
+import { ToastProvider } from '@/shared/ui/toast'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
@@ -67,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
             <main>{children}</main>
             <Footer />
+            <ToastProvider />
           </ThemeProvider>
         </QueryProvider>
       </body>

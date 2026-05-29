@@ -1,9 +1,14 @@
 'use client'
 import { useState } from 'react'
 import { useAdminArticles, type AdminArticle, type ArticleStatus } from '@/shared/hooks/use-admin'
-import { usePublishArticle } from '@/shared/hooks/use-article-mutations'
+import {
+  usePublishArticle,
+  useUnpublishArticle,
+  useArchiveArticle,
+} from '@/shared/hooks/use-article-mutations'
+import { toast } from '@/shared/ui/toast'
 import Link from 'next/link'
-import { Edit2, Eye, CheckCircle2, Plus } from 'lucide-react'
+import { Edit2, Eye, CheckCircle2, Plus, EyeOff, ArchiveIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -16,11 +21,36 @@ const STATUS_STYLE: Record<ArticleStatus, { label: string; className: string }> 
 
 export default function AdminArticlesClient() {
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useAdminArticles(page)
+  const [statusFilter, setStatusFilter] = useState<ArticleStatus | undefined>(undefined)
+  const { data, isLoading } = useAdminArticles(page, statusFilter)
   const publishArticle = usePublishArticle()
+  const unpublishArticle = useUnpublishArticle()
+  const archiveArticle = useArchiveArticle()
+
+  async function handlePublish(id: string) {
+    try { await publishArticle.mutateAsync(id); toast('Artigo publicado!') }
+    catch { toast('Erro ao publicar.', 'error') }
+  }
+
+  async function handleUnpublish(id: string) {
+    try { await unpublishArticle.mutateAsync(id); toast('Publicação removida.') }
+    catch { toast('Erro ao despublicar.', 'error') }
+  }
+
+  async function handleArchive(id: string) {
+    try { await archiveArticle.mutateAsync(id); toast('Artigo arquivado.') }
+    catch { toast('Erro ao arquivar.', 'error') }
+  }
 
   const articles = data?.data ?? []
   const meta = data?.meta
+
+  const STATUS_FILTERS: { label: string; value: ArticleStatus | undefined }[] = [
+    { label: 'Todos', value: undefined },
+    { label: 'Publicados', value: 'PUBLISHED' },
+    { label: 'Rascunhos', value: 'DRAFT' },
+    { label: 'Arquivados', value: 'ARCHIVED' },
+  ]
 
   return (
     <div className="p-6">
@@ -38,6 +68,23 @@ export default function AdminArticlesClient() {
           <Plus className="h-4 w-4" />
           Novo artigo
         </Link>
+      </div>
+
+      {/* Filtro por status */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.label}
+            onClick={() => { setStatusFilter(f.value); setPage(1) }}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              statusFilter === f.value
+                ? 'bg-zinc-900 text-white border-zinc-900'
+                : 'border-zinc-200 text-zinc-600 hover:border-zinc-400'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
@@ -120,11 +167,29 @@ export default function AdminArticlesClient() {
                           </Link>
                           {article.status === 'DRAFT' && (
                             <button
-                              onClick={() => publishArticle.mutate(article.id)}
+                              onClick={() => handlePublish(article.id)}
                               className="p-1.5 text-zinc-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                               title="Publicar"
                             >
                               <CheckCircle2 className="h-4 w-4" />
+                            </button>
+                          )}
+                          {article.status === 'PUBLISHED' && (
+                            <button
+                              onClick={() => handleUnpublish(article.id)}
+                              className="p-1.5 text-zinc-400 hover:text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
+                              title="Remover publicação"
+                            >
+                              <EyeOff className="h-4 w-4" />
+                            </button>
+                          )}
+                          {article.status !== 'ARCHIVED' && (
+                            <button
+                              onClick={() => handleArchive(article.id)}
+                              className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                              title="Arquivar"
+                            >
+                              <ArchiveIcon className="h-4 w-4" />
                             </button>
                           )}
                         </div>

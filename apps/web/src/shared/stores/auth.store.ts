@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useEffect, useState } from 'react'
 
 interface User {
   id: string
@@ -38,3 +39,16 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 )
+
+/** Retorna true apenas após o Zustand hidratar o store do localStorage */
+export function useAuthHydrated() {
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => {
+    // persist adiciona getState().rehydrate — o subscribe detecta o fim da hidratação
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
+    // Se já hidratou antes deste efeito rodar
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true)
+    return unsub
+  }, [])
+  return hydrated
+}

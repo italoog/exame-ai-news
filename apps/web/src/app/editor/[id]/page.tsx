@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { api } from '@/shared/lib/api'
 import EditorForm from '../editor-form'
-import { useAuthStore } from '@/shared/stores/auth.store'
+import { useAuthStore, useAuthHydrated } from '@/shared/stores/auth.store'
 
 interface ArticleEditData {
   id: string
@@ -21,24 +21,20 @@ export default function EditArticlePage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const { user } = useAuthStore()
+  const hydrated = useAuthHydrated()
   const [initialData, setInitialData] = useState<ArticleEditData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user) {
-      router.replace('/auth/login')
-      return
-    }
-    if (user.role !== 'EDITOR' && user.role !== 'ADMIN') {
-      router.replace('/')
-      return
-    }
+    if (!hydrated) return
+    if (!user) { router.replace('/auth/login'); return }
+    if (user.role !== 'EDITOR' && user.role !== 'ADMIN') { router.replace('/'); return }
 
     api
-      .get<{ data: { id: string; title: string; summary: string | null; content: string; coverImage: string | null; status: string; category: { id: string }; tags: { tag: { name: string } }[] } }>(`/articles/edit/${params.id}`)
+      .get<{ id: string; title: string; summary: string | null; content: string; coverImage: string | null; status: string; category: { id: string }; tags: { tag: { name: string } }[] } | { data: { id: string; title: string; summary: string | null; content: string; coverImage: string | null; status: string; category: { id: string }; tags: { tag: { name: string } }[] } }>(`/articles/edit/${params.id}`)
       .then((res) => {
-        const a = res.data.data
+        const a = 'data' in res.data ? res.data.data : res.data
         setInitialData({
           id: a.id,
           title: a.title,
@@ -52,9 +48,10 @@ export default function EditArticlePage() {
       })
       .catch(() => setError('Artigo não encontrado ou sem permissão de edição.'))
       .finally(() => setLoading(false))
-  }, [params.id, user, router])
+  }, [params.id, hydrated, user, router])
 
-  if (!user || loading) {
+  // Mostra spinner enquanto não hidratou OU enquanto o fetch está em progresso
+  if (!hydrated || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white dark:bg-zinc-950">
         <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />

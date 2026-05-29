@@ -16,20 +16,37 @@ export class AnalyticsService {
   }
 
   async getDashboard() {
-    const [totalArticles, totalUsers, totalViews, recentEvents] = await Promise.all([
-      this.prisma.article.count({ where: { status: 'PUBLISHED' } }),
-      this.prisma.user.count({ where: { isActive: true } }),
-      this.prisma.article.aggregate({ _sum: { viewCount: true } }),
-      this.prisma.analyticsEvent.count({
-        where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
-      }),
-    ])
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const [totalArticles, totalUsers, totalViews, articlesPublishedToday, topArticles] =
+      await Promise.all([
+        this.prisma.article.count({ where: { status: 'PUBLISHED' } }),
+        this.prisma.user.count({ where: { isActive: true } }),
+        this.prisma.article.aggregate({ _sum: { viewCount: true } }),
+        this.prisma.article.count({
+          where: { status: 'PUBLISHED', publishedAt: { gte: startOfToday } },
+        }),
+        this.prisma.article.findMany({
+          where: { status: 'PUBLISHED' },
+          orderBy: { viewCount: 'desc' },
+          take: 5,
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            viewCount: true,
+            category: { select: { name: true, slug: true } },
+          },
+        }),
+      ])
 
     return {
       totalArticles,
       totalUsers,
       totalViews: totalViews._sum.viewCount ?? 0,
-      eventsLast24h: recentEvents,
+      articlesPublishedToday,
+      topArticles,
     }
   }
 

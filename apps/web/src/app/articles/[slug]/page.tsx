@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CategoryBadge } from '@/shared/ui/category-badge'
 import { getCoverImage } from '@/shared/lib/cover-image'
+import { FavoriteButton } from '@/shared/ui/favorite-button'
 
 interface ArticlePageProps {
   params: { slug: string }
@@ -35,8 +36,8 @@ async function getArticle(slug: string): Promise<Article | null> {
       next: { revalidate: 60 },
     })
     if (!res.ok) return null
-    const json = await res.json() as { data: Article }
-    return json.data
+    const json = await res.json() as Article | { data: Article }
+    return 'data' in json ? json.data : json
   } catch {
     return null
   }
@@ -93,29 +94,32 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
 
         {/* Meta */}
-        <div className="mt-6 flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center">
-              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{article.author.name[0]}</span>
+        <div className="mt-6 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{article.author.name[0]}</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{article.author.name}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{article.author.name}</p>
+            <div className="flex items-center gap-4 text-xs text-zinc-400 dark:text-zinc-500">
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {publishedDate}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {article.readTime} min de leitura
+              </span>
+              <span className="flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                {article.viewCount?.toLocaleString('pt-BR')} visualizações
+              </span>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-xs text-zinc-400 dark:text-zinc-500">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              {publishedDate}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {article.readTime} min de leitura
-            </span>
-            <span className="flex items-center gap-1">
-              <Eye className="w-3 h-3" />
-              {article.viewCount?.toLocaleString('pt-BR')} visualizações
-            </span>
-          </div>
+          <FavoriteButton articleId={article.id} />
         </div>
       </header>
 
@@ -164,7 +168,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {article.tags.map(({ tag }) => (
                 <Link
                   key={tag.id}
-                  href={`/articles?tag=${tag.slug}`}
+                  href={`/search?tag=${tag.slug}`}
                   className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs font-medium rounded-full transition-colors"
                 >
                   #{tag.name}

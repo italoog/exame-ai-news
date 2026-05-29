@@ -64,13 +64,13 @@ export function useAdminDashboard() {
   })
 }
 
-export function useAdminArticles(page = 1) {
+export function useAdminArticles(page = 1, status?: ArticleStatus) {
   return useQuery({
-    queryKey: ['admin-articles', page],
+    queryKey: ['admin-articles', page, status],
     queryFn: () =>
       api
         .get<PaginatedResponse<AdminArticle>>('/articles', {
-          params: { page, limit: 20 },
+          params: { page, limit: 20, ...(status && { status }) },
         })
         .then((r) => r.data),
   })

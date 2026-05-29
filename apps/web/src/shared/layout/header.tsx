@@ -22,9 +22,6 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-red-600 flex items-center justify-center">
-              <span className="text-white font-black text-sm">E</span>
-            </div>
             <span className="font-black text-zinc-900 dark:text-white text-xl tracking-tight">
               EXAME <span className="text-red-600">AI</span>
             </span>
