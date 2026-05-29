@@ -1,0 +1,21 @@
+name: Deploy to Easypanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Trigger Easypanel Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy API
+        run: |
+          curl -s -X GET "${{ secrets.EASYPANEL_DEPLOY_API_URL }}"
+          echo "API deploy triggered"
+
+      - name: Deploy Web
+        run: |
+          curl -s -X GET "${{ secrets.EASYPANEL_DEPLOY_WEB_URL }}"
+          echo "Web deploy triggered"
