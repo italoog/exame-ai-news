@@ -20,9 +20,27 @@ const TAGS = [
   'fintech', 'agtech', 'healthtech', 'edtech',
 ]
 
-// Imagens gratuitas via picsum.photos — determinísticas por seed
+// Imagens via Unsplash — fotos temáticas de alta qualidade
+const IMAGES: Record<string, string> = {
+  'ai-journalism-newsroom':    'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=1200&q=80',
+  'stock-market-brazil-bull':  'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80',
+  'fintech-brazil-startup':    'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80',
+  'tax-reform-brazil-congress':'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80',
+  'openai-gpt5-artificial-intelligence': 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1200&q=80',
+  'nubank-digital-bank-purple':'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80',
+  'federal-reserve-interest-rates': 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?auto=format&fit=crop&w=1200&q=80',
+  'electric-vehicles-brazil-factory': 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=1200&q=80',
+  'bitcoin-crypto-bull-market':'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=1200&q=80',
+  'cloud-computing-government-tech': 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80',
+  'brazil-central-bank-monetary-policy': 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80',
+  'agribusiness-soy-harvest-brazil': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+  'healthtech-medical-ai-startup': 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80',
+  'china-economy-slowdown-skyline': 'https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?auto=format&fit=crop&w=1200&q=80',
+  'brazil-employment-job-market': 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80',
+}
+
 function img(seed: string): string {
-  return `https://picsum.photos/seed/${seed}/1200/630`
+  return IMAGES[seed] ?? `https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80`
 }
 
 interface ArticleSeed {
