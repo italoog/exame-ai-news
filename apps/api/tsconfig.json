@@ -1,0 +1,12 @@
+{
+  "extends": "@exame/typescript-config/nestjs.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*", "test/**/*", "prisma/seed.ts"],
+  "exclude": ["node_modules", "dist"]
+}

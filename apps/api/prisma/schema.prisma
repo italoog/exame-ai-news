@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  SCHEDULED
+}
+
+enum CommentStatus {
+  ACTIVE
+  HIDDEN
+  DELETED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  avatar        String?
+  bio           String?
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  articles      Article[]
+  comments      Comment[]
+  commentLikes  CommentLike[]
+  favorites     Favorite[]
+  readHistory   ReadHistory[]
+  analyticsEvents AnalyticsEvent[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model Article {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  content     String        @db.Text
+  summary     String?       @db.Text
+  aiSummary   String?       @db.Text
+  coverImage  String?
+  status      ArticleStatus @default(DRAFT)
+  featured    Boolean       @default(false)
+  publishedAt DateTime?
+  scheduledAt DateTime?
+  readTime    Int?
+  viewCount   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id])
+  categoryId  String
+  category    Category      @relation(fields: [categoryId], references: [id])
+
+  tags        ArticleTag[]
+  comments    Comment[]
+  favorites   Favorite[]
+  readHistory ReadHistory[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([categoryId, status])
+  @@index([authorId])
+  @@index([featured, status])
+  @@map("articles")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  color       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  articles    Article[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+
+  articles  ArticleTag[]
+
+  @@map("tags")
+}
+
+model ArticleTag {
+  articleId String
+  tagId     String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@map("article_tags")
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  content   String        @db.Text
+  status    CommentStatus @default(ACTIVE)
+  likeCount Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  articleId String
+  article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[]     @relation("CommentReplies")
+  likes     CommentLike[]
+
+  @@index([articleId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model CommentLike {
+  userId    String
+  commentId String
+  user      User    @relation(fields: [userId], references: [id])
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, commentId])
+  @@map("comment_likes")
+}
+
+model Favorite {
+  userId    String
+  articleId String
+  user      User    @relation(fields: [userId], references: [id])
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, articleId])
+  @@map("favorites")
+}
+
+model ReadHistory {
+  id            String   @id @default(cuid())
+  userId        String
+  articleId     String
+  readAt        DateTime @default(now())
+  readTimeSpent Int?
+  completed     Boolean  @default(false)
+
+  user    User    @relation(fields: [userId], references: [id])
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+  @@map("read_history")
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  eventType String
+  userId    String?
+  articleId String?
+  metadata  Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id])
+  article Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+
+  @@index([articleId, createdAt])
+  @@index([eventType, createdAt])
+  @@map("analytics_events")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}

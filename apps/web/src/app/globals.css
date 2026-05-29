@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* EXAME Design System — Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 220 13% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 7%;
+
+    /* Primary: EXAME Red #E10600 */
+    --primary: 2 100% 44%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 98%;
+    --secondary-foreground: 220 13% 7%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 14% 43%;
+
+    --accent: 210 20% 96%;
+    --accent-foreground: 220 13% 7%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 2 100% 44%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 220 13% 7%;
+    --foreground: 210 20% 98%;
+
+    --card: 222 18% 11%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 222 18% 11%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 2 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 25% 16%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 215 25% 16%;
+    --muted-foreground: 215 16% 60%;
+
+    --accent: 215 25% 16%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
+    --ring: 2 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  /* Article content typography */
+  .prose-exame {
+    @apply prose prose-zinc max-w-none;
+    @apply prose-headings:tracking-tight prose-headings:font-bold;
+    @apply prose-a:text-primary prose-a:no-underline hover:prose-a:underline;
+    @apply prose-img:rounded-xl;
+  }
+}

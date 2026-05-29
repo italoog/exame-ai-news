@@ -1,0 +1,4 @@
+{
+  "extends": ["@exame/eslint-config/next.js"],
+  "rules": {}
+}
