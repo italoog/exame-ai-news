@@ -2,16 +2,18 @@ import type { Metadata } from 'next'
 import CategoryClient from './category-client'
 
 interface Props {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
   return {
-    title: `${params.slug} | EXAME AI NEWS`,
-    description: `Artigos sobre ${params.slug}`,
+    title: `${slug} | EXAME AI NEWS`,
+    description: `Artigos sobre ${slug}`,
   }
 }
 
-export default function CategoryPage({ params }: Props) {
-  return <CategoryClient slug={params.slug} />
+export default async function CategoryPage({ params }: Props) {
+  const { slug } = await params
+  return <CategoryClient slug={slug} />
 }
