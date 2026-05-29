@@ -56,7 +56,6 @@ const CATEGORIES = [
   { name: 'Mercados', slug: 'mercados' },
   { name: 'Startups', slug: 'startups' },
   { name: 'Negócios', slug: 'negocios' },
-  { name: 'ESG', slug: 'esg' },
   { name: 'Internacional', slug: 'internacional' },
 ]
 

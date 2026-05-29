@@ -22,7 +22,7 @@ export function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-3 text-sm">Editorias</h4>
             <ul className="space-y-2 text-sm">
-              {['Tecnologia', 'Economia', 'Mercados', 'Startups', 'ESG'].map((cat) => (
+              {['Tecnologia', 'Economia', 'Mercados', 'Startups', 'Negócios'].map((cat) => (
                 <li key={cat}>
                   <Link href={`/categories/${cat.toLowerCase()}`} className="hover:text-white transition-colors">
                     {cat}

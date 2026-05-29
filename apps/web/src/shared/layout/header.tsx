@@ -2,22 +2,20 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Search, Menu, X, User, LogOut, Settings, Bookmark, Moon, Sun, Edit2 } from 'lucide-react'
+import { Search, Menu, X, User, LogOut, Settings, Bookmark, Edit2 } from 'lucide-react'
 import { useAuthStore } from '@/shared/stores/auth.store'
-import { useThemeStore } from '@/shared/stores/theme.store'
 
 const NAV_LINKS = [
   { label: 'Tecnologia', href: '/categories/tecnologia' },
   { label: 'Economia', href: '/categories/economia' },
   { label: 'Mercados', href: '/categories/mercados' },
   { label: 'Startups', href: '/categories/startups' },
-  { label: 'ESG', href: '/categories/esg' },
+  { label: 'Negócios', href: '/categories/negocios' },
 ]
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { user, isAuthenticated, clearAuth } = useAuthStore()
-  const { theme, toggleTheme } = useThemeStore()
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors">
@@ -44,9 +42,6 @@ export function Header() {
             <Link href="/search" className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors">
               <Search className="w-5 h-5" />
             </Link>
-            <button onClick={toggleTheme} className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors" title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}>
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
             {isAuthenticated && (
               <Link href="/favorites" className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors" title="Artigos salvos">
                 <Bookmark className="w-5 h-5" />
