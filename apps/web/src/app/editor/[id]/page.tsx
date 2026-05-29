@@ -8,6 +8,7 @@ import { useAuthStore, useAuthHydrated } from '@/shared/stores/auth.store'
 
 interface ArticleEditData {
   id: string
+  slug: string
   title: string
   summary: string
   content: string
@@ -37,6 +38,7 @@ export default function EditArticlePage() {
         const a = 'data' in res.data ? res.data.data : res.data
         setInitialData({
           id: a.id,
+          slug: a.slug,
           title: a.title,
           summary: a.summary ?? '',
           content: a.content ?? '',

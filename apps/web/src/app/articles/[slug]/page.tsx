@@ -36,7 +36,7 @@ async function getArticle(slug: string): Promise<Article | null> {
   const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
   try {
     const res = await fetch(`${apiUrl}/articles/${encodeURIComponent(slug)}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     })
     if (!res.ok) return null
     const json = await res.json() as Article | { data: Article }

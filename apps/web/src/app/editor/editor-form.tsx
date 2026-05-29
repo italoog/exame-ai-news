@@ -30,7 +30,7 @@ type ArticleForm = z.infer<typeof articleSchema>
 import { useAuthStore } from '@/shared/stores/auth.store'
 
 interface Props {
-  initialData?: Partial<ArticleForm & { id: string; status: string; tags?: string[] }>
+  initialData?: Partial<ArticleForm & { id: string; slug: string; status: string; tags?: string[] }>
 }
 
 export default function EditorForm({ initialData }: Props) {
@@ -107,7 +107,11 @@ export default function EditorForm({ initialData }: Props) {
         await createArticle.mutateAsync({ ...data, tags, status: 'PUBLISHED' })
       }
       toast('Artigo publicado com sucesso!')
-      router.back()
+      if (initialData?.slug) {
+        router.push(`/articles/${initialData.slug}`)
+      } else {
+        router.back()
+      }
     } catch {
       toast('Erro ao publicar artigo.', 'error')
     }
