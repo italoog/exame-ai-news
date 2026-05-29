@@ -5,6 +5,7 @@ import { ArticleStatus, Role } from '@prisma/client'
 import { ArticlesService } from './articles.service'
 import { PrismaService } from '../../database/prisma.service'
 import { AiService } from '../ai/ai.service'
+import { NotificationsService } from '../notifications/notifications.service'
 
 // ─── Fixture base para artigo ─────────────────────────────────────────────────
 const mockArticleBase = {
@@ -42,6 +43,10 @@ const mockAiService = {
   enqueueAiSummary: jest.fn(),
 }
 
+const mockNotificationsService = {
+  sendBreakingNews: jest.fn(),
+}
+
 // ─── Suite ────────────────────────────────────────────────────────────────────
 describe('ArticlesService', () => {
   let service: ArticlesService
@@ -52,6 +57,7 @@ describe('ArticlesService', () => {
         ArticlesService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: AiService, useValue: mockAiService },
+        { provide: NotificationsService, useValue: mockNotificationsService },
       ],
     }).compile()
 

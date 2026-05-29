@@ -11,34 +11,33 @@ interface ArticlePageProps {
   params: { slug: string }
 }
 
-async function getArticle(slug: string) {
-  return {
-    id: '1',
-    title: 'Inteligência Artificial Transforma o Jornalismo: O Futuro das Redações Digitais',
-    slug,
-    content: `
-      <p>O cenário do jornalismo digital está passando por uma transformação sem precedentes. A inteligência artificial não é mais uma promessa futura — ela já está no coração das redações mais inovadoras do mundo.</p>
-      <h2>A Revolução Silenciosa</h2>
-      <p>Ferramentas baseadas em Large Language Models (LLMs) estão acelerando desde a pesquisa de pauta até a distribuição de conteúdo. Redações como Bloomberg, Reuters e Associated Press já automatizam dezenas de milhares de textos por mês.</p>
-      <p>No Brasil, portais como Agência Brasil e veículos do Grupo Globo experimentam com sumarização automática e categorização de conteúdo. A tecnologia ainda enfrenta resistência, mas os resultados falam por si.</p>
-      <h2>Dados que Impressionam</h2>
-      <p>Segundo pesquisa da Reuters Institute, 78% das redações globais já utilizam alguma forma de IA em seus fluxos de trabalho. No Brasil, esse número ainda está em 34%, mas cresce 12 pontos percentuais ao ano.</p>
-      <p>A produtividade aumenta em média 40% quando jornalistas usam IA como assistente — não como substituto. A chave está na curadoria humana sobre o output da máquina.</p>
-      <h2>Desafios e Oportunidades</h2>
-      <p>Checagem de fatos, viés algorítmico e questões autorais são os principais desafios. Porém, as oportunidades superam os riscos quando a tecnologia é implementada com responsabilidade.</p>
-    `,
-    summary: 'Como as grandes redações do mundo estão adotando IA para acelerar a produção de conteúdo e personalizar a experiência do leitor.',
-    aiSummary: 'Redações globais adotam IA em larga escala: Bloomberg e Reuters automatizam milhares de textos/mês. No Brasil, adoção cresce 12 p.p. ao ano. Chave do sucesso: curadoria humana sobre output da IA, não substituição.',
-    coverImage: null,
-    publishedAt: new Date().toISOString(),
-    readTime: 7,
-    viewCount: 12847,
-    author: { id: '1', name: 'Ana Beatriz Costa', avatar: null, bio: 'Editora de Tecnologia' },
-    category: { name: 'Tecnologia', slug: 'tecnologia', color: '#3B82F6' },
-    tags: [
-      { tag: { id: '1', name: 'inteligência-artificial', slug: 'inteligencia-artificial' } },
-      { tag: { id: '2', name: 'machine-learning', slug: 'machine-learning' } },
-    ],
+interface Article {
+  id: string
+  title: string
+  slug: string
+  content: string
+  summary: string | null
+  aiSummary: string | null
+  coverImage: string | null
+  publishedAt: string | null
+  readTime: number | null
+  viewCount: number | null
+  author: { id: string; name: string; avatar: string | null }
+  category: { id: string; name: string; slug: string; color: string | null }
+  tags: Array<{ tag: { id: string; name: string; slug: string } }>
+}
+
+async function getArticle(slug: string): Promise<Article | null> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+  try {
+    const res = await fetch(`${apiUrl}/api/articles/${encodeURIComponent(slug)}`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return null
+    const json = await res.json() as { data: Article }
+    return json.data
+  } catch {
+    return null
   }
 }
 

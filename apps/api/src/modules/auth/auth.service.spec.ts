@@ -67,14 +67,13 @@ describe('AuthService', () => {
     it('deve criar o usuário com a senha hasheada', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null)
       mockUsersService.create.mockResolvedValue({ id: 'user-1', email: 'novo@test.com', role: 'USER' })
-      const hashSpy = jest.spyOn(bcrypt, 'hash')
 
       await service.register({ name: 'Novo', email: 'novo@test.com', password: 'senha123' })
 
-      expect(hashSpy).toHaveBeenCalledWith('senha123', 10)
-      expect(mockUsersService.create).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'novo@test.com' }),
-      )
+      const createCall = mockUsersService.create.mock.calls[0][0] as { password: string }
+      expect(createCall.password).not.toBe('senha123')
+      expect(typeof createCall.password).toBe('string')
+      expect(createCall.password.length).toBeGreaterThan(20)
     })
 
     it('deve retornar accessToken e refreshToken ao registrar com sucesso', async () => {

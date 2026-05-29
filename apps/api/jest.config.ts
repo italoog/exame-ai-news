@@ -9,7 +9,7 @@ const config: Config = {
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
   moduleNameMapper: { '@/(.*)': '<rootDir>/$1' },
-  coverageThresholds: {
+  coverageThreshold: {
     global: { branches: 70, functions: 80, lines: 80 },
   },
 }
