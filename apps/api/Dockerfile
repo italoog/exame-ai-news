@@ -18,12 +18,6 @@ RUN pnpm install --frozen-lockfile
 WORKDIR /app/apps/api
 RUN pnpm run db:generate && pnpm run build
 
-# Cria deploy standalone sem symlinks de workspace
-WORKDIR /app
-RUN pnpm --filter=@exame/api deploy --prod /deploy
-# Sobrescreve com o dist compilado (pnpm deploy pode não incluir dist/)
-RUN cp -r /app/apps/api/dist /deploy/dist && cp -r /app/apps/api/prisma /deploy/prisma
-
 # ================================
 # Stage: runner (production)
 # ================================
@@ -32,8 +26,12 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
-# Deployment auto-contido (node_modules sem symlinks + arquivos do app)
-COPY --from=builder /deploy ./
+# Copia o dist compilado e arquivos de runtime
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/prisma ./prisma
+COPY --from=builder /app/apps/api/package.json ./package.json
+# Docker COPY resolve symlinks relativos do pnpm automaticamente
+COPY --from=builder /app/node_modules ./node_modules
 
 RUN chown -R nestjs:nodejs /app
 USER nestjs
