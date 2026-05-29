@@ -33,7 +33,7 @@ interface Article {
 }
 
 async function getArticle(slug: string): Promise<Article | null> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
+  const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
   try {
     const res = await fetch(`${apiUrl}/articles/${encodeURIComponent(slug)}`, {
       next: { revalidate: 60 },

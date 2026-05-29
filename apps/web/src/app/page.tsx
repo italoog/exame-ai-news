@@ -22,7 +22,7 @@ type Article = {
   category: { id: string; name: string; slug: string; color: string | null }
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
 async function fetchFeatured(): Promise<Article | null> {
   try {
