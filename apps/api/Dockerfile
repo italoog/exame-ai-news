@@ -21,7 +21,7 @@ CMD ["pnpm", "dev"]
 # ================================
 FROM base AS builder
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 COPY . .
 RUN pnpm run db:generate
 RUN pnpm run build
