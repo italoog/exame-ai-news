@@ -10,6 +10,8 @@ import { CategoryBadge } from '@/shared/ui/category-badge'
 import { getCoverImage } from '@/shared/lib/cover-image'
 import { FavoriteButton } from '@/shared/ui/favorite-button'
 
+export const dynamic = 'force-dynamic'
+
 interface ArticlePageProps {
   params: { slug: string }
 }
