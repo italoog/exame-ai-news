@@ -1,4 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing'
+import type { TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing'
 import { ForbiddenException, NotFoundException } from '@nestjs/common'
 import { ArticleStatus, Role } from '@prisma/client'
 import { ArticlesService } from './articles.service'

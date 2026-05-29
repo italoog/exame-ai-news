@@ -1,6 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq'
 import { Logger } from '@nestjs/common'
 import { Job } from 'bullmq'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '../../../database/prisma.service'
 import { QUEUE_ANALYTICS } from '../../queue/queue.module'
 
@@ -27,7 +28,7 @@ export class AnalyticsProcessor extends WorkerHost {
         eventType: event,
         articleId,
         userId: userId ?? null,
-        metadata: metadata ?? {},
+        metadata: (metadata ?? {}) as Prisma.InputJsonValue,
       },
     })
 

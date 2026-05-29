@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import type { ChangeEvent } from 'react'
 import {
   useAdminUsers,
   useUpdateUserRole,
@@ -84,10 +85,10 @@ export default function AdminUsersClient() {
                       {editingId === user.id ? (
                         <select
                           defaultValue={user.role}
-                          onChange={(e) => {
+                          onChange={(e: ChangeEvent<HTMLSelectElement>) => {
                             updateRole.mutate({
                               userId: user.id,
-                              role: e.target.value as UserRole,
+                              role: (e.target as HTMLSelectElement).value as UserRole,
                             })
                             setEditingId(null)
                           }}

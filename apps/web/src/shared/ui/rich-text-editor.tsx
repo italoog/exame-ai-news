@@ -61,12 +61,12 @@ export function RichTextEditor({ value, onChange, placeholder = 'Escreva seu art
 
   function addLink() {
     const url = window.prompt('URL do link:')
-    if (url) editor.chain().focus().setLink({ href: url }).run()
+    if (url) editor!.chain().focus().setLink({ href: url }).run()
   }
 
   function addImage() {
     const url = window.prompt('URL da imagem:')
-    if (url) editor.chain().focus().setImage({ src: url }).run()
+    if (url) editor!.chain().focus().setImage({ src: url }).run()
   }
 
   return (

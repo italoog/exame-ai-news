@@ -1,7 +1,7 @@
 import {
-  Controller, Get, Patch, Body, Param, UseGuards, HttpCode, HttpStatus
+  Controller, Get, Patch, Body, Param, UseGuards,
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UpdateRoleDto } from './dto/update-role.dto'

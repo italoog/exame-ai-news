@@ -1,46 +1,6 @@
 import type { Config } from 'tailwindcss'
-
-const config: Config = {
-  darkMode: 'class',
-  content: [
-    './src/**/*.{ts,tsx}',
-    '../../packages/ui/src/**/*.{ts,tsx}',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#FFF1F1',
-          100: '#FFD6D6',
-          200: '#FFB0B0',
-          300: '#FF8585',
-          400: '#FF5C5C',
-          500: '#E10600',
-          600: '#B80000',
-          700: '#8A0000',
-          800: '#5C0000',
-          900: '#300000',
-        },
-      },
-      fontFamily: {
-        sans: ['Inter', 'Helvetica Neue', 'sans-serif'],
-      },
-      borderRadius: {
-        lg: '12px',
-        xl: '16px',
-      },
-      boxShadow: {
-        sm: '0 1px 2px rgba(0,0,0,0.04)',
-        md: '0 4px 12px rgba(0,0,0,0.06)',
-        lg: '0 10px 30px rgba(0,0,0,0.08)',
-      },
-    },
-  },
-  plugins: [],
-}
-
-export default config
-
+import { fontFamily } from 'tailwindcss/defaultTheme'
+import animate from 'tailwindcss-animate'
 
 const config: Config = {
   darkMode: ['class'],
@@ -58,7 +18,6 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // EXAME Brand
         brand: {
           DEFAULT: '#E10600',
           50: '#FFF1F1',
@@ -72,7 +31,6 @@ const config: Config = {
           800: '#5C0000',
           900: '#300000',
         },
-        // Semantic mapping (shadcn/ui compatible)
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -155,6 +113,6 @@ const config: Config = {
     },
   },
   plugins: [animate],
-};
+}
 
-export default config;
+export default config

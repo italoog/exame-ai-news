@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BullModule } from '@nestjs/bullmq'
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
@@ -41,11 +42,11 @@ export const QUEUE_RECOMMENDATIONS = 'recommendations'
       adapter: ExpressAdapter,
     }),
     BullBoardModule.forFeature(
-      { name: QUEUE_AI_SUMMARY, adapter: BullMQAdapter },
-      { name: QUEUE_ANALYTICS, adapter: BullMQAdapter },
-      { name: QUEUE_EMAIL, adapter: BullMQAdapter },
-      { name: QUEUE_TRENDING, adapter: BullMQAdapter },
-      { name: QUEUE_RECOMMENDATIONS, adapter: BullMQAdapter },
+      { name: QUEUE_AI_SUMMARY, adapter: BullMQAdapter as any },
+      { name: QUEUE_ANALYTICS, adapter: BullMQAdapter as any },
+      { name: QUEUE_EMAIL, adapter: BullMQAdapter as any },
+      { name: QUEUE_TRENDING, adapter: BullMQAdapter as any },
+      { name: QUEUE_RECOMMENDATIONS, adapter: BullMQAdapter as any },
     ),
   ],
   exports: [BullModule],

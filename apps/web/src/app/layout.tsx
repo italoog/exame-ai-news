@@ -12,38 +12,6 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: { default: 'EXAME AI NEWS', template: '%s | EXAME AI NEWS' },
-  description: 'Plataforma de notícias com inteligência artificial',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
-  openGraph: {
-    type: 'website',
-    locale: 'pt_BR',
-    siteName: 'EXAME AI NEWS',
-  },
-}
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
-      <body className="min-h-screen bg-white">
-        <QueryProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </QueryProvider>
-      </body>
-    </html>
-  )
-}
-
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
   title: {
     default: 'EXAME AI NEWS — Inteligência no mercado',
@@ -87,14 +55,19 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-};
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={inter.variable}>
-      <body>
-        <Providers>{children}</Providers>
+    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
+      <body className="min-h-screen bg-white">
+        <QueryProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </QueryProvider>
       </body>
     </html>
-  );
+  )
 }
+

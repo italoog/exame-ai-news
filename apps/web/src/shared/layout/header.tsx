@@ -24,7 +24,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+            <div className="w-8 h-8 bg-red-600 flex items-center justify-center">
               <span className="text-white font-black text-sm">E</span>
             </div>
             <span className="font-black text-zinc-900 text-xl tracking-tight">
