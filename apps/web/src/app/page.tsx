@@ -22,11 +22,11 @@ type Article = {
   category: { id: string; name: string; slug: string; color: string | null }
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
 async function fetchFeatured(): Promise<Article | null> {
   try {
-    const res = await fetch(`${API}/api/articles/featured`, { next: { revalidate: 60 } })
+    const res = await fetch(`${API}/articles/featured`, { next: { revalidate: 60 } })
     if (!res.ok) return null
     const json = await res.json() as Article[] | { data: Article[] }
     const list = Array.isArray(json) ? json : (json.data ?? [])
@@ -36,7 +36,7 @@ async function fetchFeatured(): Promise<Article | null> {
 
 async function fetchLatest(): Promise<Article[]> {
   try {
-    const res = await fetch(`${API}/api/articles?limit=6`, { next: { revalidate: 60 } })
+    const res = await fetch(`${API}/articles?limit=6`, { next: { revalidate: 60 } })
     if (!res.ok) return []
     const json = await res.json() as { data: Article[] }
     return json.data ?? []
@@ -45,7 +45,7 @@ async function fetchLatest(): Promise<Article[]> {
 
 async function fetchTrending(): Promise<Article[]> {
   try {
-    const res = await fetch(`${API}/api/articles/trending`, { next: { revalidate: 300 } })
+    const res = await fetch(`${API}/articles/trending`, { next: { revalidate: 300 } })
     if (!res.ok) return []
     const json = await res.json() as Article[] | { data: Article[] }
     return Array.isArray(json) ? json : (json.data ?? [])
