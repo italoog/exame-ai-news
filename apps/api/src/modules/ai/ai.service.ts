@@ -15,11 +15,27 @@ export class AiService {
     @InjectQueue(QUEUE_AI_SUMMARY) private aiSummaryQueue: Queue,
     @InjectQueue(QUEUE_TRENDING) private trendingQueue: Queue,
   ) {
-    const apiKey = config.get<string>('OPENAI_API_KEY')
-    if (apiKey) {
-      this.openai = new OpenAI({ apiKey })
+    const geminiKey = config.get<string>('GEMINI_API_KEY')
+    const groqKey = config.get<string>('GROQ_API_KEY')
+    const openaiKey = config.get<string>('OPENAI_API_KEY')
+
+    if (geminiKey) {
+      this.openai = new OpenAI({
+        apiKey: geminiKey,
+        baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+      })
+      this.logger.log('IA: usando Google Gemini (gemini-2.0-flash)')
+    } else if (groqKey) {
+      this.openai = new OpenAI({
+        apiKey: groqKey,
+        baseURL: 'https://api.groq.com/openai/v1',
+      })
+      this.logger.log('IA: usando Groq (llama-3.3-70b-versatile)')
+    } else if (openaiKey) {
+      this.openai = new OpenAI({ apiKey: openaiKey })
+      this.logger.log('IA: usando OpenAI (gpt-4o-mini)')
     } else {
-      this.logger.warn('OPENAI_API_KEY não configurada — usando sumarização local')
+      this.logger.warn('Nenhuma chave de IA configurada (GEMINI_API_KEY / GROQ_API_KEY / OPENAI_API_KEY) — usando sumarização local')
     }
   }
 
@@ -46,8 +62,15 @@ export class AiService {
 
     if (this.openai) {
       try {
+        const isGroq = this.openai.baseURL?.includes('groq')
+        const isGemini = this.openai.baseURL?.includes('googleapis')
+        const model = isGroq
+          ? 'llama-3.3-70b-versatile'
+          : isGemini
+            ? 'gemini-2.0-flash'
+            : 'gpt-4o-mini'
         const response = await this.openai.chat.completions.create({
-          model: 'gpt-4o-mini',
+          model,
           messages: [
             {
               role: 'system',
