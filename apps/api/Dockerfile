@@ -6,39 +6,34 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 # ================================
-# Stage: development
-# ================================
-FROM base AS development
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
-COPY . .
-RUN pnpm run db:generate
-EXPOSE 3001
-CMD ["pnpm", "dev"]
-
-# ================================
 # Stage: builder
+# — contexto = raiz do monorepo
 # ================================
 FROM base AS builder
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --no-frozen-lockfile
+# Copia todo o monorepo para resolver workspace:* deps
 COPY . .
-RUN pnpm run db:generate
-RUN pnpm run build
+RUN pnpm install --frozen-lockfile
+
+# Gera Prisma client e compila
+WORKDIR /app/apps/api
+RUN pnpm run db:generate && pnpm run build
+
+# Cria deploy standalone sem symlinks de workspace
+WORKDIR /app
+RUN pnpm --filter=@exame/api deploy --prod /deploy
+# Sobrescreve com o dist compilado (pnpm deploy pode não incluir dist/)
+RUN cp -r /app/apps/api/dist /deploy/dist && cp -r /app/apps/api/prisma /deploy/prisma
 
 # ================================
 # Stage: runner (production)
 # ================================
 FROM node:20-alpine AS runner
-RUN npm install -g pnpm
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/package.json ./
+# Deployment auto-contido (node_modules sem symlinks + arquivos do app)
+COPY --from=builder /deploy ./
 
 RUN chown -R nestjs:nodejs /app
 USER nestjs

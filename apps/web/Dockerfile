@@ -6,22 +6,16 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 # ================================
-# Stage: development
-# ================================
-FROM base AS development
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
-COPY . .
-EXPOSE 3000
-CMD ["pnpm", "dev"]
-
-# ================================
 # Stage: builder
+# — contexto = raiz do monorepo
 # ================================
 FROM base AS builder
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --no-frozen-lockfile
+# Copia todo o monorepo para resolver workspace:* deps
 COPY . .
+RUN pnpm install --frozen-lockfile
+
+# Build do Next.js
+WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm run build
 
@@ -36,9 +30,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Next.js standalone output já contém node_modules necessários
+COPY --from=builder /app/apps/web/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static
 
 USER nextjs
 
