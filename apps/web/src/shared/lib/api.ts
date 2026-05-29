@@ -22,8 +22,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true
       try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+          `${apiBase}/auth/refresh`,
           {},
           { withCredentials: true },
         )
