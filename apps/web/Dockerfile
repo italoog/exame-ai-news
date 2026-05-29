@@ -33,7 +33,7 @@ RUN adduser --system --uid 1001 nextjs
 # Next.js standalone output já contém node_modules necessários
 COPY --from=builder /app/apps/web/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 
 USER nextjs
 
@@ -44,4 +44,4 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
   CMD wget -qO- http://localhost:3000 || exit 1
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/web/server.js"]
