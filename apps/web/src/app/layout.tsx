@@ -4,6 +4,7 @@ import '@/styles/globals.css'
 import { Header } from '@/shared/layout/header'
 import { Footer } from '@/shared/layout/footer'
 import { QueryProvider } from '@/shared/providers/query-provider'
+import { ThemeProvider } from '@/shared/providers/theme-provider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -60,11 +61,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
-      <body className="min-h-screen bg-white">
+      <body className="min-h-screen bg-white dark:bg-zinc-950 transition-colors">
         <QueryProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
+          <ThemeProvider>
+            <Header />
+            <main>{children}</main>
+            <Footer />
+          </ThemeProvider>
         </QueryProvider>
       </body>
     </html>

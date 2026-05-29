@@ -1,9 +1,10 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Search, Menu, X, User, LogOut, Settings, Bookmark } from 'lucide-react'
+import { Search, Menu, X, User, LogOut, Settings, Bookmark, Moon, Sun, Edit2 } from 'lucide-react'
 import { useAuthStore } from '@/shared/stores/auth.store'
+import { useThemeStore } from '@/shared/stores/theme.store'
 
 const NAV_LINKS = [
   { label: 'Tecnologia', href: '/categories/tecnologia' },
@@ -16,84 +17,69 @@ const NAV_LINKS = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { user, isAuthenticated, clearAuth } = useAuthStore()
+  const { theme, toggleTheme } = useThemeStore()
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-zinc-200">
+    <header className="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Top bar */}
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="w-8 h-8 bg-red-600 flex items-center justify-center">
               <span className="text-white font-black text-sm">E</span>
             </div>
-            <span className="font-black text-zinc-900 text-xl tracking-tight">
+            <span className="font-black text-zinc-900 dark:text-white text-xl tracking-tight">
               EXAME <span className="text-red-600">AI</span>
             </span>
           </Link>
 
-          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
             {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-3 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition-colors"
-              >
+              <Link key={link.href} href={link.href} className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors">
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          {/* Right actions */}
-          <div className="flex items-center gap-2">
-            <Link href="/search" className="p-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition-colors">
+          <div className="flex items-center gap-1">
+            <Link href="/search" className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors">
               <Search className="w-5 h-5" />
             </Link>
-
+            <button onClick={toggleTheme} className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors" title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}>
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
             {isAuthenticated && (
-              <Link
-                href="/favorites"
-                className="p-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 rounded-lg transition-colors"
-                title="Artigos salvos"
-              >
+              <Link href="/favorites" className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors" title="Artigos salvos">
                 <Bookmark className="w-5 h-5" />
               </Link>
             )}
-
+            {(isAuthenticated && (user?.role === 'EDITOR' || user?.role === 'ADMIN')) && (
+              <Link href="/editor" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:border-red-300 dark:hover:border-red-600 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors">
+                <Edit2 className="w-3.5 h-3.5" />
+                Editor
+              </Link>
+            )}
             {isAuthenticated ? (
               <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-zinc-50 transition-colors">
-                  <div className="w-7 h-7 bg-zinc-200 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-zinc-600">
-                      {user?.name?.[0]?.toUpperCase()}
-                    </span>
+                <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                  <div className="w-7 h-7 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{user?.name?.[0]?.toUpperCase()}</span>
                   </div>
-                  <span className="hidden sm:block text-sm font-medium text-zinc-700 max-w-24 truncate">
-                    {user?.name}
-                  </span>
+                  <span className="hidden sm:block text-sm font-medium text-zinc-700 dark:text-zinc-300 max-w-24 truncate">{user?.name}</span>
                 </button>
-                {/* Dropdown */}
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-zinc-200 rounded-xl shadow-md opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all">
+                <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all">
                   <div className="p-1">
-                    <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 rounded-lg">
-                      <User className="w-4 h-4" /> Meu Perfil
-                    </Link>
+                    <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><User className="w-4 h-4" /> Meu Perfil</Link>
                     {(user?.role === 'EDITOR' || user?.role === 'ADMIN') && (
-                      <Link href="/editor/new" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 rounded-lg">
-                        <Settings className="w-4 h-4" /> Editor
-                      </Link>
+                      <>
+                        <Link href="/editor" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><Edit2 className="w-4 h-4" /> Meus Artigos</Link>
+                        <Link href="/editor/new" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><Settings className="w-4 h-4" /> Novo Artigo</Link>
+                      </>
                     )}
                     {user?.role === 'ADMIN' && (
-                      <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 rounded-lg">
-                        <Settings className="w-4 h-4" /> Admin
-                      </Link>
+                      <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><Settings className="w-4 h-4" /> Painel Admin</Link>
                     )}
-                    <hr className="my-1 border-zinc-100" />
-                    <button
-                      onClick={clearAuth}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
-                    >
+                    <hr className="my-1 border-zinc-100 dark:border-zinc-700" />
+                    <button onClick={clearAuth} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
                       <LogOut className="w-4 h-4" /> Sair
                     </button>
                   </div>
@@ -101,41 +87,28 @@ export function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/auth/login" className="px-3 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-900">
-                  Entrar
-                </Link>
-                <Link
-                  href="/auth/register"
-                  className="px-4 py-2 text-sm font-semibold bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition-colors"
-                >
-                  Cadastrar
-                </Link>
+                <Link href="/auth/login" className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white">Entrar</Link>
+                <Link href="/auth/register" className="px-4 py-2 text-sm font-semibold bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition-colors">Cadastrar</Link>
               </div>
             )}
-
-            {/* Mobile toggle */}
-            <button
-              className="md:hidden p-2 text-zinc-500 hover:text-zinc-900 rounded-lg"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
+            <button className="md:hidden p-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg" onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Nav */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-zinc-100 py-3">
+          <div className="md:hidden border-t border-zinc-100 dark:border-zinc-800 py-3">
             {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 rounded-lg"
-                onClick={() => setMobileOpen(false)}
-              >
+              <Link key={link.href} href={link.href} className="block px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg" onClick={() => setMobileOpen(false)}>
                 {link.label}
               </Link>
             ))}
+            {(user?.role === 'EDITOR' || user?.role === 'ADMIN') && (
+              <Link href="/editor" className="block px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg" onClick={() => setMobileOpen(false)}>
+                Editor de Artigos
+              </Link>
+            )}
           </div>
         )}
       </div>

@@ -106,6 +106,22 @@ export class ArticlesService {
     }
   }
 
+  async findByIdForEdit(id: string, userId: string, userRole: Role) {
+    const article = await this.prisma.article.findUnique({
+      where: { id },
+      select: { ...ARTICLE_SELECT, content: true },
+    })
+
+    if (!article) throw new NotFoundException('Artigo não encontrado')
+
+    const authorId = (article.author as { id: string }).id
+    if (userRole !== Role.ADMIN && authorId !== userId) {
+      throw new ForbiddenException('Sem permissão para editar este artigo')
+    }
+
+    return article
+  }
+
   async findTrending(limit = 10) {
     return this.prisma.article.findMany({
       where: { status: ArticleStatus.PUBLISHED },

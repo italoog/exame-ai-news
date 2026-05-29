@@ -48,6 +48,18 @@ export class ArticlesController {
     return this.articlesService.findFeatured()
   }
 
+  @Get('edit/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EDITOR, Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Buscar artigo para edição (EDITOR, ADMIN)' })
+  getForEdit(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    return this.articlesService.findByIdForEdit(id, user.id, user.role)
+  }
+
   @Get(':slug')
   @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Artigo completo por slug' })

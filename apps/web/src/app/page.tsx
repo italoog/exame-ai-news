@@ -8,44 +8,47 @@ export const metadata: Metadata = {
   description: 'As principais notícias do mundo dos negócios, tecnologia e mercados com análise de inteligência artificial.',
 }
 
-const MOCK_FEATURED = {
-  id: '1',
-  title: 'Inteligência Artificial Transforma o Jornalismo: O Futuro das Redações Digitais',
-  slug: 'ia-transforma-jornalismo-digital',
-  summary: 'Como as grandes redações do mundo estão adotando IA para acelerar a produção de conteúdo e personalizar a experiência do leitor.',
-  coverImage: null,
-  publishedAt: new Date().toISOString(),
-  readTime: 7,
-  viewCount: 12847,
-  author: { name: 'Ana Beatriz Costa', avatar: null },
-  category: { name: 'Tecnologia', slug: 'tecnologia', color: '#3B82F6' },
+type Article = {
+  id: string
+  title: string
+  slug: string
+  summary: string | null
+  coverImage: string | null
+  publishedAt: string | null
+  readTime: number | null
+  viewCount: number
+  author: { id: string; name: string; avatar: string | null }
+  category: { id: string; name: string; slug: string; color: string | null }
 }
 
-const MOCK_ARTICLES = Array.from({ length: 6 }, (_, i) => ({
-  id: String(i + 2),
-  title: [
-    'Ibovespa Atinge Nova Máxima Histórica com Fluxo Estrangeiro',
-    'Startups Brasileiras Captam R$ 4 Bilhões no Primeiro Trimestre',
-    'Reforma Tributária: Impactos para Empresas e Investidores',
-    'Fintechs Desafiam Bancos Tradicionais no Crédito Consignado',
-    'ESG Deixa de ser Diferencial e Vira Requisito de Mercado',
-    'Venture Capital Global Mantém Cautela no Brasil',
-  ][i],
-  slug: `artigo-${i + 2}`,
-  summary: 'Análise aprofundada com dados exclusivos e perspectivas de especialistas do mercado financeiro.',
-  coverImage: null,
-  publishedAt: new Date(Date.now() - (i + 1) * 3600000).toISOString(),
-  readTime: (i % 6) + 3,
-  viewCount: (i + 1) * 800,
-  author: { name: i % 2 === 0 ? 'Ana Beatriz Costa' : 'Carlos Mendes', avatar: null },
-  category: {
-    name: ['Mercados', 'Startups', 'Política', 'Negócios', 'ESG', 'Internacional'][i],
-    slug: ['mercados', 'startups', 'politica', 'negocios', 'esg', 'internacional'][i],
-    color: null,
-  },
-}))
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 
-const TRENDING = MOCK_ARTICLES.slice(0, 5)
+async function fetchFeatured(): Promise<Article | null> {
+  try {
+    const res = await fetch(`${API}/api/articles/featured`, { next: { revalidate: 60 } })
+    if (!res.ok) return null
+    const json = await res.json() as { data: Article[] }
+    return json.data?.[0] ?? null
+  } catch { return null }
+}
+
+async function fetchLatest(): Promise<Article[]> {
+  try {
+    const res = await fetch(`${API}/api/articles?limit=6`, { next: { revalidate: 60 } })
+    if (!res.ok) return []
+    const json = await res.json() as { data: Article[] }
+    return json.data ?? []
+  } catch { return [] }
+}
+
+async function fetchTrending(): Promise<Article[]> {
+  try {
+    const res = await fetch(`${API}/api/articles/trending`, { next: { revalidate: 300 } })
+    if (!res.ok) return []
+    const json = await res.json() as { data: Article[] }
+    return json.data ?? []
+  } catch { return [] }
+}
 
 const CATEGORIES = [
   { name: 'Tecnologia', slug: 'tecnologia' },
@@ -57,18 +60,27 @@ const CATEGORIES = [
   { name: 'Internacional', slug: 'internacional' },
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [featured, latest, trending] = await Promise.all([
+    fetchFeatured(),
+    fetchLatest(),
+    fetchTrending(),
+  ])
+
+  const displayLatest = latest.length > 0 ? latest : []
+  const displayTrending = trending.length > 0 ? trending.slice(0, 5) : []
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors">
       {/* Category Bar */}
-      <div className="border-b border-zinc-100 bg-zinc-50">
+      <div className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 overflow-x-auto">
           <div className="flex items-center gap-1 py-2 whitespace-nowrap">
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/categories/${cat.slug}`}
-                className="px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:text-red-600 hover:bg-white rounded-lg transition-colors"
+                className="px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-zinc-800 rounded-lg transition-colors"
               >
                 {cat.name}
               </Link>
@@ -82,26 +94,36 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Featured Article */}
           <div className="lg:col-span-2">
-            <ArticleCard article={MOCK_FEATURED} variant="featured" />
+            {featured ? (
+              <ArticleCard article={featured} variant="featured" />
+            ) : (
+              <div className="h-[480px] rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <p className="text-zinc-400 dark:text-zinc-600 text-sm">Nenhum destaque disponível</p>
+              </div>
+            )}
           </div>
 
           {/* Trending Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-zinc-50 rounded-xl p-6 h-full">
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl p-6 h-full border border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-2 mb-5">
                 <TrendingUp className="w-4 h-4 text-red-600" />
-                <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">Mais Lidos</h2>
+                <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">Mais Lidos</h2>
               </div>
-              <div className="space-y-5">
-                {TRENDING.map((article, i) => (
-                  <div key={article.id} className="flex items-start gap-3">
-                    <span className="text-2xl font-black text-zinc-200 leading-none w-6 flex-shrink-0">
-                      {i + 1}
-                    </span>
-                    <ArticleCard article={article} variant="horizontal" />
-                  </div>
-                ))}
-              </div>
+              {displayTrending.length > 0 ? (
+                <div className="space-y-5">
+                  {displayTrending.map((article, i) => (
+                    <div key={article.id} className="flex items-start gap-3">
+                      <span className="text-2xl font-black text-zinc-200 dark:text-zinc-700 leading-none w-6 flex-shrink-0">
+                        {i + 1}
+                      </span>
+                      <ArticleCard article={article} variant="horizontal" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-zinc-400 dark:text-zinc-600 text-sm">Sem dados disponíveis</p>
+              )}
             </div>
           </div>
         </div>
@@ -111,22 +133,30 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-red-600" />
-              <h2 className="text-lg font-bold text-zinc-900">Últimas Notícias</h2>
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Últimas Notícias</h2>
             </div>
-            <Link href="/articles" className="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
+            <Link href="/feed" className="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
               Ver todas →
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {MOCK_ARTICLES.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
+          {displayLatest.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {displayLatest.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 text-zinc-400 dark:text-zinc-600">
+              <p className="text-sm">Nenhum artigo publicado ainda.</p>
+              <Link href="/editor/new" className="mt-3 inline-block text-red-600 text-sm hover:underline">
+                Criar o primeiro artigo →
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Newsletter CTA */}
-        <div className="mt-16 bg-zinc-950 rounded-2xl p-8 md:p-12 text-center">
+        <div className="mt-16 bg-zinc-950 dark:bg-zinc-900 border dark:border-zinc-800 rounded-2xl p-8 md:p-12 text-center">
           <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight mb-3">
             Fique à frente do mercado
           </h2>
@@ -148,3 +178,4 @@ export default function HomePage() {
     </div>
   )
 }
+
