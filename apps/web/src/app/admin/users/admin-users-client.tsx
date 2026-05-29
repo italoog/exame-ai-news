@@ -13,11 +13,19 @@ import { ptBR } from 'date-fns/locale'
 
 const ROLE_STYLE: Record<UserRole, string> = {
   ADMIN: 'text-red-600 bg-red-50',
-  EDITOR: 'text-blue-600 bg-blue-50',
+  EDITOR: 'text-purple-600 bg-purple-50',
+  REDATOR: 'text-blue-600 bg-blue-50',
   USER: 'text-zinc-600 bg-zinc-100',
 }
 
-const ROLE_OPTIONS: UserRole[] = ['USER', 'EDITOR', 'ADMIN']
+const ROLE_LABEL: Record<UserRole, string> = {
+  ADMIN: 'Admin',
+  EDITOR: 'Editor',
+  REDATOR: 'Redator',
+  USER: 'Leitor',
+}
+
+const ROLE_OPTIONS: UserRole[] = ['USER', 'REDATOR', 'EDITOR', 'ADMIN']
 
 export default function AdminUsersClient() {
   const [page, setPage] = useState(1)
@@ -98,7 +106,7 @@ export default function AdminUsersClient() {
                         >
                           {ROLE_OPTIONS.map((role) => (
                             <option key={role} value={role}>
-                              {role}
+                              {ROLE_LABEL[role]}
                             </option>
                           ))}
                         </select>
@@ -106,7 +114,7 @@ export default function AdminUsersClient() {
                         <span
                           className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_STYLE[user.role]}`}
                         >
-                          {user.role}
+                          {ROLE_LABEL[user.role]}
                         </span>
                       )}
                     </td>

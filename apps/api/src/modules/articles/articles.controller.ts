@@ -31,9 +31,9 @@ export class ArticlesController {
   @ApiOperation({ summary: 'Listar artigos com filtros e paginação' })
   findAll(
     @Query() filters: ArticleFiltersDto,
-    @CurrentUser() user?: { role: Role },
+    @CurrentUser() user?: { id: string; role: Role },
   ) {
-    return this.articlesService.findAll(filters, user?.role)
+    return this.articlesService.findAll(filters, user?.role, user?.id)
   }
 
   @Get('trending')
@@ -50,9 +50,9 @@ export class ArticlesController {
 
   @Get('edit/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.EDITOR, Role.ADMIN)
+  @Roles(Role.REDATOR, Role.EDITOR, Role.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Buscar artigo para edição (EDITOR, ADMIN)' })
+  @ApiOperation({ summary: 'Buscar artigo para edição (REDATOR, EDITOR, ADMIN)' })
   getForEdit(
     @Param('id') id: string,
     @CurrentUser() user: { id: string; role: Role },
@@ -72,9 +72,9 @@ export class ArticlesController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.EDITOR, Role.ADMIN)
+  @Roles(Role.REDATOR, Role.EDITOR, Role.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Criar artigo (EDITOR, ADMIN)' })
+  @ApiOperation({ summary: 'Criar artigo (REDATOR, EDITOR, ADMIN)' })
   create(
     @Body() dto: CreateArticleDto,
     @CurrentUser() user: { id: string },
@@ -84,7 +84,7 @@ export class ArticlesController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.EDITOR, Role.ADMIN)
+  @Roles(Role.REDATOR, Role.EDITOR, Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar artigo' })
   update(
@@ -112,8 +112,11 @@ export class ArticlesController {
   @Roles(Role.EDITOR, Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover publicação (volta para rascunho)' })
-  unpublish(@Param('id') id: string) {
-    return this.articlesService.unpublish(id)
+  unpublish(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    return this.articlesService.unpublish(id, user.id, user.role)
   }
 
   @Patch(':id/archive')
@@ -121,8 +124,11 @@ export class ArticlesController {
   @Roles(Role.EDITOR, Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Arquivar artigo' })
-  archive(@Param('id') id: string) {
-    return this.articlesService.archive(id)
+  archive(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    return this.articlesService.archive(id, user.id, user.role)
   }
 
   @Delete(':id')

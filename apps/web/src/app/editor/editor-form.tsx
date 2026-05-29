@@ -27,12 +27,16 @@ const articleSchema = z.object({
 
 type ArticleForm = z.infer<typeof articleSchema>
 
+import { useAuthStore } from '@/shared/stores/auth.store'
+
 interface Props {
   initialData?: Partial<ArticleForm & { id: string; status: string; tags?: string[] }>
 }
 
 export default function EditorForm({ initialData }: Props) {
   const router = useRouter()
+  const { user } = useAuthStore()
+  const isRedator = user?.role === 'REDATOR'
   const [tags, setTags] = useState<string[]>(initialData?.tags ?? [])
   const [tagInput, setTagInput] = useState('')
   const { data: categoriesData } = useCategories()
@@ -178,15 +182,22 @@ export default function EditorForm({ initialData }: Props) {
             <Save className="h-4 w-4" />
             Salvar rascunho
           </button>
-          <button
-            type="button"
-            onClick={handleSubmit(onPublish)}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-[#E10600] text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
-          >
-            <Send className="h-4 w-4" />
-            Publicar
-          </button>
+          {!isRedator && (
+            <button
+              type="button"
+              onClick={handleSubmit(onPublish)}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-[#E10600] text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              <Send className="h-4 w-4" />
+              Publicar
+            </button>
+          )}
+          {isRedator && (
+            <span className="text-xs text-zinc-400 italic px-2">
+              Salve o rascunho — um editor irá revisar e publicar.
+            </span>
+          )}
         </div>
       </div>
 

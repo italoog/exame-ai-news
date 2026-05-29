@@ -393,6 +393,32 @@ async function main() {
     },
   })
 
+  const redator1 = await prisma.user.upsert({
+    where: { email: 'redator1@exame.com' },
+    update: {},
+    create: {
+      name: 'Fábio Andrade',
+      email: 'redator1@exame.com',
+      password: defaultPasswordHash,
+      role: Role.REDATOR,
+      bio: 'Redatór especializado em startups e inovação',
+      emailVerified: true,
+    },
+  })
+
+  const redator2 = await prisma.user.upsert({
+    where: { email: 'redator2@exame.com' },
+    update: {},
+    create: {
+      name: 'Juliana Lima',
+      email: 'redator2@exame.com',
+      password: defaultPasswordHash,
+      role: Role.REDATOR,
+      bio: 'Redatora de mercados financeiros',
+      emailVerified: true,
+    },
+  })
+
   const userEmails = [
     'joao@email.com', 'maria@email.com', 'pedro@email.com',
     'lucia@email.com', 'rafael@email.com',
@@ -412,10 +438,10 @@ async function main() {
       })
     )
   )
-  console.log((users.length + 3) + ' usuários criados')
+  console.log((users.length + 5) + ' usuários criados')
 
   console.log('Criando artigos...')
-  const authors = [admin, editor1, editor2]
+  const authors = [admin, editor1, editor2, redator1, redator2]
   let articleCount = 0
 
   for (const [i, art] of ARTICLES.entries()) {
@@ -504,10 +530,12 @@ async function main() {
 
   console.log('\nSeed concluído com sucesso!')
   console.log('---')
-  console.log('Admin:   admin@exame.com / Senha123!')
-  console.log('Editor1: editor1@exame.com / Senha123!')
-  console.log('Editor2: editor2@exame.com / Senha123!')
-  console.log('User:    joao@email.com / Senha123!')
+  console.log('Admin:    admin@exame.com / Senha123!')
+  console.log('Editor1:  editor1@exame.com / Senha123!  (EDITOR)')
+  console.log('Editor2:  editor2@exame.com / Senha123!  (EDITOR)')
+  console.log('Redator1: redator1@exame.com / Senha123! (REDATOR)')
+  console.log('Redator2: redator2@exame.com / Senha123! (REDATOR)')
+  console.log('User:     joao@email.com / Senha123!     (USER)')
 }
 
 main()

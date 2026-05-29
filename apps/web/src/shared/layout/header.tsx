@@ -44,10 +44,10 @@ export function Header() {
                 <Bookmark className="w-5 h-5" />
               </Link>
             )}
-            {(isAuthenticated && (user?.role === 'EDITOR' || user?.role === 'ADMIN')) && (
+            {(isAuthenticated && (user?.role === 'EDITOR' || user?.role === 'ADMIN' || user?.role === 'REDATOR')) && (
               <Link href="/editor" className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:border-red-300 dark:hover:border-red-600 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors">
                 <Edit2 className="w-3.5 h-3.5" />
-                Editor
+                {user?.role === 'REDATOR' ? 'Meus Textos' : 'Editor'}
               </Link>
             )}
             {isAuthenticated ? (
@@ -61,7 +61,7 @@ export function Header() {
                 <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all">
                   <div className="p-1">
                     <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><User className="w-4 h-4" /> Meu Perfil</Link>
-                    {(user?.role === 'EDITOR' || user?.role === 'ADMIN') && (
+                    {(user?.role === 'EDITOR' || user?.role === 'ADMIN' || user?.role === 'REDATOR') && (
                       <>
                         <Link href="/editor" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><Edit2 className="w-4 h-4" /> Meus Artigos</Link>
                         <Link href="/editor/new" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><Settings className="w-4 h-4" /> Novo Artigo</Link>
@@ -96,7 +96,7 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            {(user?.role === 'EDITOR' || user?.role === 'ADMIN') && (
+            {(user?.role === 'EDITOR' || user?.role === 'ADMIN' || user?.role === 'REDATOR') && (
               <Link href="/editor" className="block px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg" onClick={() => setMobileOpen(false)}>
                 Editor de Artigos
               </Link>

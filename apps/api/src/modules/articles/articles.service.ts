@@ -39,19 +39,24 @@ export class ArticlesService {
     private notificationsService: NotificationsService,
   ) {}
 
-  async findAll(filters: ArticleFiltersDto, userRole?: Role) {
+  async findAll(filters: ArticleFiltersDto, userRole?: Role, userId?: string) {
     const { page = 1, limit = 12, category, tag, search, status } = filters
     const skip = (page - 1) * limit
 
-    const isEditor = userRole === Role.EDITOR || userRole === Role.ADMIN
-    const statusFilter = status
+    const isEditorOrAdmin = userRole === Role.EDITOR || userRole === Role.ADMIN
+    const isRedator = userRole === Role.REDATOR
+
+    // EDITOR/ADMIN vîm tudo; REDATOR vê publicados + próprios; USER só publicados
+    const baseStatusFilter = status
       ? { status: status as ArticleStatus }
-      : isEditor
+      : isEditorOrAdmin
         ? {}
-        : { status: ArticleStatus.PUBLISHED }
+        : isRedator && userId
+          ? { OR: [{ status: ArticleStatus.PUBLISHED }, { authorId: userId }] }
+          : { status: ArticleStatus.PUBLISHED }
 
     const where = {
-      ...statusFilter,
+      ...baseStatusFilter,
       ...(category && { category: { slug: category } }),
       ...(tag && { tags: { some: { tag: { slug: tag } } } }),
       ...(search && {
@@ -113,6 +118,10 @@ export class ArticlesService {
     })
 
     if (!article) throw new NotFoundException('Artigo não encontrado')
+    // REDATOR só vê próprios artigos
+    if (userRole === Role.REDATOR && article.authorId !== userId) {
+      throw new ForbiddenException('Você só pode editar seus próprios artigos')
+    }
 
     return article
   }
@@ -164,6 +173,10 @@ export class ArticlesService {
   async update(id: string, dto: UpdateArticleDto, userId: string, userRole: Role) {
     const article = await this.prisma.article.findUnique({ where: { id } })
     if (!article) throw new NotFoundException('Artigo não encontrado')
+    // REDATOR e EDITOR só editam os próprios; ADMIN edita tudo
+    if (article.authorId !== userId && userRole !== Role.ADMIN) {
+      throw new ForbiddenException('Você só pode editar seus próprios artigos')
+    }
 
     const { tags, ...rest } = dto
     const tagIds = tags !== undefined ? await this.resolveTagIds(tags) : undefined
@@ -185,6 +198,13 @@ export class ArticlesService {
   async publish(id: string, userId: string, userRole: Role) {
     const article = await this.prisma.article.findUnique({ where: { id } })
     if (!article) throw new NotFoundException('Artigo não encontrado')
+    // Apenas EDITOR e ADMIN publicam — REDATOR precisa de aprovação
+    if (userRole === Role.REDATOR) {
+      throw new ForbiddenException('Redatores não podem publicar diretamente. Solicite revisão a um editor.')
+    }
+    if (article.authorId !== userId && userRole !== Role.ADMIN) {
+      throw new ForbiddenException('Você só pode publicar seus próprios artigos')
+    }
 
     const updated = await this.prisma.article.update({
       where: { id },
@@ -206,9 +226,16 @@ export class ArticlesService {
     return updated
   }
 
-  async unpublish(id: string) {
+  async unpublish(id: string, userId: string, userRole: Role) {
     const article = await this.prisma.article.findUnique({ where: { id } })
     if (!article) throw new NotFoundException('Artigo não encontrado')
+    // Apenas EDITOR e ADMIN despublicam
+    if (userRole === Role.REDATOR) {
+      throw new ForbiddenException('Redatores não podem despublicar artigos.')
+    }
+    if (article.authorId !== userId && userRole !== Role.ADMIN) {
+      throw new ForbiddenException('Você só pode despublicar seus próprios artigos')
+    }
 
     return this.prisma.article.update({
       where: { id },
@@ -217,9 +244,13 @@ export class ArticlesService {
     })
   }
 
-  async archive(id: string) {
+  async archive(id: string, userId: string, userRole: Role) {
     const article = await this.prisma.article.findUnique({ where: { id } })
     if (!article) throw new NotFoundException('Artigo não encontrado')
+    // REDATOR só arquiva os próprios; EDITOR/ADMIN arquivam qualquer um
+    if (userRole === Role.REDATOR && article.authorId !== userId) {
+      throw new ForbiddenException('Você só pode arquivar seus próprios artigos')
+    }
 
     return this.prisma.article.update({
       where: { id },

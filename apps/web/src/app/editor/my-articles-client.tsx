@@ -19,10 +19,10 @@ export default function MyArticlesClient() {
   const { user } = useAuthStore()
   const { data, isLoading } = useArticles({ limit: 50 })
 
-  if (!user || (user.role !== 'EDITOR' && user.role !== 'ADMIN')) {
+  if (!user || (user.role !== 'EDITOR' && user.role !== 'ADMIN' && user.role !== 'REDATOR')) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-zinc-500">Acesso restrito a editores.</p>
+        <p className="text-zinc-500">Acesso restrito a redatores e editores.</p>
       </div>
     )
   }

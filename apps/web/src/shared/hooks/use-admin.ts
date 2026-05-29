@@ -33,7 +33,7 @@ export interface AdminArticle {
   author?: { name: string }
 }
 
-export type UserRole = 'USER' | 'EDITOR' | 'ADMIN'
+export type UserRole = 'USER' | 'REDATOR' | 'EDITOR' | 'ADMIN'
 
 export interface AdminUser {
   id: string

@@ -47,8 +47,22 @@ make dev
 | Usuário | Email | Senha | Role |
 |---------|-------|-------|------|
 | Admin | admin@exame.com | Senha123! | ADMIN |
-| Editor | editor1@exame.com | Senha123! | EDITOR |
-| Usuário | joao@email.com | Senha123! | USER |
+| Editor 1 | editor1@exame.com | Senha123! | EDITOR |
+| Editor 2 | editor2@exame.com | Senha123! | EDITOR |
+| Redator 1 | redator1@exame.com | Senha123! | REDATOR |
+| Redator 2 | redator2@exame.com | Senha123! | REDATOR |
+| Leitor | joao@email.com | Senha123! | USER |
+
+### Hierarquia de Roles
+
+| Role | Cria rascunho | Edita artigo | Publica | Gerencia usuários |
+|------|:---:|:---:|:---:|:---:|
+| USER (Leitor) | ❌ | ❌ | ❌ | ❌ |
+| REDATOR | ✅ | só os próprios | ❌ | ❌ |
+| EDITOR | ✅ | qualquer um | ✅ | ❌ |
+| ADMIN | ✅ | qualquer um | ✅ | ✅ |
+
+> **Fluxo editorial**: Redatores criam rascunhos → Editores revisam e publicam → Admins têm controle total.
 
 ## Comandos
 
