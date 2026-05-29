@@ -45,7 +45,8 @@ export default function AdminUsersClient() {
         </p>
       </div>
 
-      <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-zinc-200 bg-zinc-50">
@@ -80,10 +81,15 @@ export default function AdminUsersClient() {
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-xs font-semibold flex-shrink-0">
-                          {user.name?.charAt(0)?.toUpperCase()}
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-100 flex items-center justify-center text-zinc-600 text-xs font-semibold flex-shrink-0">
+                          {user.avatar ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            user.name?.charAt(0)?.toUpperCase()
+                          )}
                         </div>
-                        <span className="font-medium text-zinc-900">{user.name}</span>
+                        <span className="font-medium text-zinc-900 dark:text-zinc-100">{user.name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell text-zinc-600">
@@ -139,6 +145,7 @@ export default function AdminUsersClient() {
                 ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {meta && meta.totalPages > 1 && (

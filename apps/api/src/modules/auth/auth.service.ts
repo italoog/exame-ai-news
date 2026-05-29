@@ -2,14 +2,20 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import * as bcrypt from 'bcrypt'
+import * as crypto from 'crypto'
 import { UsersService } from '../users/users.service'
 import { PrismaService } from '../../database/prisma.service'
+import { EmailService } from './email.service'
 import type { RegisterDto } from './dto/register.dto'
 import type { LoginDto } from './dto/login.dto'
+import type { ForgotPasswordDto } from './dto/forgot-password.dto'
+import type { ResetPasswordDto } from './dto/reset-password.dto'
 
 @Injectable()
 export class AuthService {
@@ -18,6 +24,7 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private prisma: PrismaService,
+    private emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -63,6 +70,51 @@ export class AuthService {
   async logout(token: string) {
     await this.prisma.refreshToken.deleteMany({ where: { token } })
     return { message: 'Logout realizado com sucesso' }
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.usersService.findByEmail(dto.email)
+    // Sempre retorna sucesso para não revelar se o email existe
+    if (!user) return { message: 'Se este e-mail estiver cadastrado, você receberá as instruções.' }
+
+    // Invalida tokens anteriores
+    await this.prisma.passwordResetToken.deleteMany({ where: { userId: user.id } })
+
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hora
+
+    await this.prisma.passwordResetToken.create({
+      data: { token, userId: user.id, expiresAt },
+    })
+
+    const appUrl = this.config.get('APP_URL', 'http://localhost:3000')
+    const resetUrl = `${appUrl}/auth/reset-password?token=${token}`
+
+    await this.emailService.sendPasswordReset(user.email, user.name, resetUrl)
+
+    return { message: 'Se este e-mail estiver cadastrado, você receberá as instruções.' }
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const record = await this.prisma.passwordResetToken.findUnique({
+      where: { token: dto.token },
+      include: { user: true },
+    })
+
+    if (!record) throw new BadRequestException('Token inválido')
+    if (record.expiresAt < new Date()) throw new BadRequestException('Token expirado. Solicite um novo.')
+    if (record.usedAt) throw new BadRequestException('Token já utilizado')
+
+    const hashed = await bcrypt.hash(dto.password, 10)
+
+    await Promise.all([
+      this.prisma.user.update({ where: { id: record.userId }, data: { password: hashed } }),
+      this.prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
+      // Invalida todos os refresh tokens do usuário por segurança
+      this.prisma.refreshToken.deleteMany({ where: { userId: record.userId } }),
+    ])
+
+    return { message: 'Senha redefinida com sucesso. Faça login com a nova senha.' }
   }
 
   async validateUser(email: string, password: string) {

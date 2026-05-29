@@ -5,6 +5,8 @@ import { AuthService } from './auth.service'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
 import { RefreshDto } from './dto/refresh.dto'
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -31,6 +33,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Renovar access token via refresh token' })
   async refresh(@Body() dto: RefreshDto) {
     return this.authService.refresh(dto.refreshToken)
@@ -41,5 +44,20 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout — invalida refresh token' })
   async logout(@Body() dto: RefreshDto) {
     return this.authService.logout(dto.refreshToken)
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
+  @ApiOperation({ summary: 'Solicitar redefinição de senha' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto)
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Redefinir senha com token' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto)
   }
 }

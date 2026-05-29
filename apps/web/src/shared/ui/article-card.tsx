@@ -68,11 +68,11 @@ export function ArticleCard({ article, variant = 'default', className }: Article
           )}
           <div className="mt-4 flex items-center gap-3 text-white/60 text-xs">
             <span>{article.author.name}</span>
-            <span>Â·</span>
+            <span aria-hidden>·</span>
             <span>{publishedDate}</span>
             {article.readTime && (
               <>
-                <span>Â·</span>
+                <span aria-hidden>·</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {article.readTime} min
@@ -102,7 +102,7 @@ export function ArticleCard({ article, variant = 'default', className }: Article
         )}
         <div className="mt-3 flex items-center gap-3 text-zinc-400 dark:text-zinc-500 text-xs">
           <span>{article.author.name}</span>
-          <span>Â·</span>
+          <span aria-hidden>·</span>
           <span>{publishedDate}</span>
           {article.readTime && (
             <span className="flex items-center gap-1 ml-auto">

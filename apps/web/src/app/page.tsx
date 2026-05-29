@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArticleCard } from '@/shared/ui/article-card'
 import { TrendingUp, Zap } from 'lucide-react'
+import NewsletterForm from './newsletter-form'
 
 export const metadata: Metadata = {
   title: 'EXAME AI NEWS — Notícias de Negócios e Tecnologia',
@@ -74,8 +75,8 @@ export default async function HomePage() {
     <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors">
       {/* Category Bar */}
       <div className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 overflow-x-auto">
-          <div className="flex items-center gap-1 py-2 whitespace-nowrap">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1 py-2 whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat.slug}
@@ -163,16 +164,7 @@ export default async function HomePage() {
           <p className="text-zinc-400 mb-6 max-w-md mx-auto">
             Receba as principais análises com resumos gerados por IA direto no seu e-mail.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
-            <input
-              type="email"
-              placeholder="seu@email.com"
-              className="flex-1 px-4 py-3 bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg text-sm focus:outline-none focus:border-red-500"
-            />
-            <button className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition-colors whitespace-nowrap">
-              Assinar grátis
-            </button>
-          </div>
+          <NewsletterForm />
         </div>
       </div>
     </div>

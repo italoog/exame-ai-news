@@ -15,4 +15,7 @@ export const envValidationSchema = Joi.object({
   CLOUDINARY_API_KEY: Joi.string().allow('').optional(),
   CLOUDINARY_API_SECRET: Joi.string().allow('').optional(),
   CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
+  RESEND_API_KEY: Joi.string().allow('').optional(),
+  EMAIL_FROM: Joi.string().email().default('noreply@exame-ai.news'),
+  APP_URL: Joi.string().default('http://localhost:3000'),
 })

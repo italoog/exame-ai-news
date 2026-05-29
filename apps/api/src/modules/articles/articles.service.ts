@@ -119,7 +119,7 @@ export class ArticlesService {
 
     if (!article) throw new NotFoundException('Artigo não encontrado')
     // REDATOR só vê próprios artigos
-    if (userRole === Role.REDATOR && article.authorId !== userId) {
+    if (userRole === Role.REDATOR && article.author.id !== userId) {
       throw new ForbiddenException('Você só pode editar seus próprios artigos')
     }
 

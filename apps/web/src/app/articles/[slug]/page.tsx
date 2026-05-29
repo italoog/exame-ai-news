@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { Calendar, Clock, Eye, Tag, ChevronRight, Sparkles } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import DOMPurify from 'isomorphic-dompurify'
 import { CategoryBadge } from '@/shared/ui/category-badge'
 import { getCoverImage } from '@/shared/lib/cover-image'
 import { FavoriteButton } from '@/shared/ui/favorite-button'
@@ -97,8 +98,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className="mt-6 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{article.author.name[0]}</span>
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center shrink-0">
+                {article.author.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={article.author.avatar} alt={article.author.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{article.author.name[0]}</span>
+                )}
               </div>
               <div>
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{article.author.name}</p>
@@ -157,7 +163,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-3
             prose-p:leading-7
             prose-a:text-red-600 prose-a:no-underline hover:prose-a:underline"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
         />
 
         {/* Tags */}

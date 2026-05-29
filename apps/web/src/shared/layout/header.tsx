@@ -53,8 +53,13 @@ export function Header() {
             {isAuthenticated ? (
               <div className="relative group">
                 <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                  <div className="w-7 h-7 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{user?.name?.[0]?.toUpperCase()}</span>
+                  <div className="w-7 h-7 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center shrink-0">
+                    {user?.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={user.avatar} alt={user.name ?? ''} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    ) : (
+                      <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{user?.name?.[0]?.toUpperCase()}</span>
+                    )}
                   </div>
                   <span className="hidden sm:block text-sm font-medium text-zinc-700 dark:text-zinc-300 max-w-24 truncate">{user?.name}</span>
                 </button>

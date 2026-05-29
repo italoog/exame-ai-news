@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import Image from 'next/image'
 import { Heart, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -44,12 +43,13 @@ function CommentItem({ comment, articleId, depth = 0 }: CommentItemProps) {
     <div className={`flex gap-3 ${depth > 0 ? 'ml-8 mt-4' : ''}`}>
       <div className="flex-shrink-0">
         {comment.author.avatar ? (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={comment.author.avatar}
             alt={comment.author.name}
             width={36}
             height={36}
-            className="rounded-full object-cover"
+            className="w-9 h-9 rounded-full object-cover"
           />
         ) : (
           <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-semibold text-sm">

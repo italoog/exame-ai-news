@@ -8,6 +8,7 @@ interface User {
   email: string
   role: 'USER' | 'REDATOR' | 'EDITOR' | 'ADMIN'
   avatar?: string
+  bio?: string
 }
 
 interface AuthState {

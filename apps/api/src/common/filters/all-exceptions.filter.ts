@@ -25,7 +25,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : 'Erro interno do servidor'
 
     if (status >= 500) {
-      this.logger.error(`HTTP ${status}: ${message}`, exception instanceof Error ? exception.stack : '')
+      const isProduction = process.env.NODE_ENV === 'production'
+      this.logger.error(
+        `HTTP ${status}: ${isProduction ? 'Internal Server Error' : message}`,
+        isProduction ? undefined : (exception instanceof Error ? exception.stack : ''),
+      )
     }
 
     response.status(status).json({

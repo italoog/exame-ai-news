@@ -16,6 +16,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module'
 import { AdminModule } from './modules/admin/admin.module'
 import { RecommendationsModule } from './modules/recommendations/recommendations.module'
 import { NotificationsModule } from './modules/notifications/notifications.module'
+import { NewsletterModule } from './modules/newsletter/newsletter.module'
 import { HealthModule } from './health/health.module'
 import { envValidationSchema } from './config/env.validation'
 
@@ -23,6 +24,7 @@ import { envValidationSchema } from './config/env.validation'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['../../.env', '.env'],
       validationSchema: envValidationSchema,
     }),
     ThrottlerModule.forRoot([
@@ -44,6 +46,7 @@ import { envValidationSchema } from './config/env.validation'
     AdminModule,
     RecommendationsModule,
     NotificationsModule,
+    NewsletterModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

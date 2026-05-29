@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import { useAuthStore } from '@/shared/stores/auth.store'
 import { api } from '@/shared/lib/api'
 
@@ -30,7 +30,6 @@ export function LoginForm() {
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) })
 
   async function onSubmit(data: LoginFormData) {
-    setError('')
     try {
       const { data: response } = await api.post('/auth/login', data)
       const { accessToken } = response.data ?? response
@@ -52,8 +51,9 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-          {error}
+        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-300 rounded-lg text-red-800">
+          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0 text-red-600" />
+          <p className="text-sm font-medium">{error}</p>
         </div>
       )}
 
