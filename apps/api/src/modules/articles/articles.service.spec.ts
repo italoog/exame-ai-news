@@ -350,4 +350,124 @@ describe('ArticlesService', () => {
       )
     })
   })
+
+  // ─────────────────────────────────────────────
+  // update()
+  // ─────────────────────────────────────────────
+  describe('update', () => {
+    it('deve atualizar artigo quando usuário é o autor', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue({
+        ...mockArticleBase,
+        authorId: 'user-1',
+        content: 'conteúdo original',
+        status: ArticleStatus.PUBLISHED,
+      })
+      mockPrismaService.article.update.mockResolvedValue({ ...mockArticleBase, title: 'Atualizado' })
+
+      const result = await service.update('article-1', { title: 'Atualizado' }, 'user-1', Role.EDITOR)
+
+      expect(result.title).toBe('Atualizado')
+    })
+
+    it('deve lançar ForbiddenException quando user não é o autor e não é ADMIN', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue({ ...mockArticleBase, authorId: 'outro-user', content: 'x' })
+
+      await expect(
+        service.update('article-1', { title: 'X' }, 'user-1', Role.REDATOR),
+      ).rejects.toThrow(ForbiddenException)
+    })
+
+    it('deve lançar NotFoundException quando artigo não existe', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue(null)
+
+      await expect(service.update('inexistente', {}, 'user-1', Role.ADMIN)).rejects.toThrow(NotFoundException)
+    })
+  })
+
+  // ─────────────────────────────────────────────
+  // unpublish()
+  // ─────────────────────────────────────────────
+  describe('unpublish', () => {
+    it('deve voltar artigo para DRAFT quando EDITOR é o autor', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue({ ...mockArticleBase, authorId: 'user-1', content: 'x' })
+      mockPrismaService.article.update.mockResolvedValue({ ...mockArticleBase, status: ArticleStatus.DRAFT })
+
+      await service.unpublish('article-1', 'user-1', Role.EDITOR)
+
+      expect(mockPrismaService.article.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { status: ArticleStatus.DRAFT, publishedAt: null } }),
+      )
+    })
+
+    it('deve lançar ForbiddenException para REDATOR', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue({ ...mockArticleBase, authorId: 'user-1', content: 'x' })
+
+      await expect(service.unpublish('article-1', 'user-1', Role.REDATOR)).rejects.toThrow(ForbiddenException)
+    })
+
+    it('deve lançar NotFoundException quando artigo não existe', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue(null)
+
+      await expect(service.unpublish('inexistente', 'user-1', Role.ADMIN)).rejects.toThrow(NotFoundException)
+    })
+  })
+
+  // ─────────────────────────────────────────────
+  // archive()
+  // ─────────────────────────────────────────────
+  describe('archive', () => {
+    it('deve arquivar artigo quando EDITOR é o autor', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue({ ...mockArticleBase, authorId: 'user-1', content: 'x' })
+      mockPrismaService.article.update.mockResolvedValue({ ...mockArticleBase, status: ArticleStatus.ARCHIVED })
+
+      await service.archive('article-1', 'user-1', Role.EDITOR)
+
+      expect(mockPrismaService.article.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { status: ArticleStatus.ARCHIVED } }),
+      )
+    })
+
+    it('deve lançar ForbiddenException quando REDATOR tenta arquivar artigo de outro', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue({ ...mockArticleBase, authorId: 'outro-user', content: 'x' })
+
+      await expect(service.archive('article-1', 'user-1', Role.REDATOR)).rejects.toThrow(ForbiddenException)
+    })
+
+    it('deve lançar NotFoundException quando artigo não existe', async () => {
+      mockPrismaService.article.findUnique.mockResolvedValue(null)
+
+      await expect(service.archive('inexistente', 'user-1', Role.ADMIN)).rejects.toThrow(NotFoundException)
+    })
+  })
+
+  // ─────────────────────────────────────────────
+  // findTrending()
+  // ─────────────────────────────────────────────
+  describe('findTrending', () => {
+    it('deve retornar artigos PUBLISHED ordenados por viewCount e publishedAt', async () => {
+      mockPrismaService.article.findMany.mockResolvedValue([mockArticleBase])
+
+      const result = await service.findTrending()
+
+      expect(result).toHaveLength(1)
+      const callArgs = mockPrismaService.article.findMany.mock.calls[0][0]
+      expect(callArgs.where).toMatchObject({ status: ArticleStatus.PUBLISHED })
+      expect(callArgs.take).toBe(10)
+    })
+  })
+
+  // ─────────────────────────────────────────────
+  // findFeatured()
+  // ─────────────────────────────────────────────
+  describe('findFeatured', () => {
+    it('deve retornar somente artigos PUBLISHED e featured=true', async () => {
+      mockPrismaService.article.findMany.mockResolvedValue([{ ...mockArticleBase, featured: true }])
+
+      const result = await service.findFeatured()
+
+      expect(result).toHaveLength(1)
+      const callWhere = mockPrismaService.article.findMany.mock.calls[0][0].where
+      expect(callWhere).toMatchObject({ status: ArticleStatus.PUBLISHED, featured: true })
+    })
+  })
 })

@@ -212,4 +212,72 @@ describe('UsersService', () => {
       expect(result.meta.limit).toBe(20)
     })
   })
+
+  // ─────────────────────────────────────────────
+  // findByIdWithPassword()
+  // ─────────────────────────────────────────────
+  describe('findByIdWithPassword', () => {
+    it('deve retornar usuário completo incluindo hash de senha', async () => {
+      const userWithPassword = { ...mockUserBase, password: '$2b$10$hashedpassword' }
+      mockPrismaService.user.findUnique.mockResolvedValue(userWithPassword)
+
+      const result = await service.findByIdWithPassword('user-1')
+
+      expect(result).toEqual(userWithPassword)
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({ where: { id: 'user-1' } })
+    })
+
+    it('deve retornar null quando usuário não existe', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(null)
+
+      const result = await service.findByIdWithPassword('inexistente')
+
+      expect(result).toBeNull()
+    })
+  })
+
+  // ─────────────────────────────────────────────
+  // updateRole()
+  // ─────────────────────────────────────────────
+  describe('updateRole', () => {
+    it('deve atualizar o role do usuário', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUserBase)
+      mockPrismaService.user.update.mockResolvedValue({ ...mockUserBase, role: Role.EDITOR })
+
+      const result = await service.updateRole('user-1', Role.EDITOR)
+
+      expect(result.role).toBe(Role.EDITOR)
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { role: Role.EDITOR },
+        select: expect.any(Object),
+      })
+    })
+
+    it('deve lançar NotFoundException quando usuário não existe', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(null)
+
+      await expect(service.updateRole('inexistente', Role.ADMIN)).rejects.toThrow(NotFoundException)
+    })
+  })
+
+  // ─────────────────────────────────────────────
+  // getProfile()
+  // ─────────────────────────────────────────────
+  describe('getProfile', () => {
+    it('deve retornar perfil com contagens de artigos/comentários/favoritos', async () => {
+      const profile = { ...mockUserBase, _count: { articles: 3, comments: 10, favorites: 5 } }
+      mockPrismaService.user.findUnique.mockResolvedValue(profile)
+
+      const result = await service.getProfile('user-1')
+
+      expect(result._count).toEqual({ articles: 3, comments: 10, favorites: 5 })
+    })
+
+    it('deve lançar NotFoundException quando usuário não existe', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(null)
+
+      await expect(service.getProfile('inexistente')).rejects.toThrow(NotFoundException)
+    })
+  })
 })
