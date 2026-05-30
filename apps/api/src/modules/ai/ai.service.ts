@@ -9,6 +9,7 @@ import { QUEUE_AI_SUMMARY, QUEUE_TRENDING } from '../queue/queue.module'
 export class AiService {
   private readonly logger = new Logger(AiService.name)
   private openai: OpenAI | null = null
+  private openaiGroq: OpenAI | null = null
 
   constructor(
     private config: ConfigService,
@@ -37,13 +38,22 @@ export class AiService {
     } else {
       this.logger.warn('Nenhuma chave de IA configurada (GEMINI_API_KEY / GROQ_API_KEY / OPENAI_API_KEY) — usando sumarização local')
     }
+
+    // Groq como fallback independente (ativado quando Gemini é o primário)
+    if (geminiKey && groqKey) {
+      this.openaiGroq = new OpenAI({
+        apiKey: groqKey,
+        baseURL: 'https://api.groq.com/openai/v1',
+      })
+      this.logger.log('IA: Groq configurado como fallback')
+    }
   }
 
   async enqueueAiSummary(articleId: string, title: string, content: string): Promise<void> {
     await this.aiSummaryQueue.add(
       'generate-summary',
       { articleId, title, content },
-      { jobId: `summary-${articleId}`, delay: 1000 },
+      { delay: 1000 },
     )
     this.logger.log(`Job de resumo enfileirado para artigo ${articleId}`)
   }
@@ -87,7 +97,28 @@ export class AiService {
         })
         return response.choices[0]?.message?.content ?? this.localSummary(plainContent)
       } catch (err) {
-        this.logger.error('Erro ao chamar OpenAI, usando fallback', err)
+        this.logger.error('Provedor primário falhou, tentando Groq como fallback', err)
+        if (this.openaiGroq) {
+          try {
+            const groqResp = await this.openaiGroq.chat.completions.create({
+              model: 'llama-3.3-70b-versatile',
+              messages: [
+                {
+                  role: 'system',
+                  content:
+                    'Você é um editor da revista EXAME. Gere um resumo executivo em português de 2-3 frases para o artigo fornecido, destacando os pontos mais importantes.',
+                },
+                { role: 'user', content: `Título: ${title}\n\nConteúdo: ${truncated}` },
+              ],
+              max_tokens: 200,
+              temperature: 0.5,
+            })
+            this.logger.log('Resumo gerado com sucesso via Groq (fallback)')
+            return groqResp.choices[0]?.message?.content ?? this.localSummary(plainContent)
+          } catch (groqErr) {
+            this.logger.error('Groq também falhou, usando sumarização local', groqErr)
+          }
+        }
         return this.localSummary(plainContent)
       }
     }

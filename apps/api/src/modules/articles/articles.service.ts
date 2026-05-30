@@ -180,7 +180,7 @@ export class ArticlesService {
 
     const { tags, ...rest } = dto
     const tagIds = tags !== undefined ? await this.resolveTagIds(tags) : undefined
-    return this.prisma.article.update({
+    const updated = await this.prisma.article.update({
       where: { id },
       data: {
         ...rest,
@@ -193,6 +193,13 @@ export class ArticlesService {
       },
       select: ARTICLE_SELECT,
     })
+
+    // Re-gera resumo IA quando o conteúdo for atualizado em artigos publicados
+    if (dto.content !== undefined && article.status === ArticleStatus.PUBLISHED) {
+      void this.aiService.enqueueAiSummary(updated.id, updated.title, dto.content)
+    }
+
+    return updated
   }
 
   async publish(id: string, userId: string, userRole: Role) {
