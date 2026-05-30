@@ -103,9 +103,9 @@ export function NewsCarousel({ articles }: Props) {
                   {article.title}
                 </h2>
               </Link>
-              {(article.summary ?? article.aiSummary) && (
+              {(article.summary || article.aiSummary) && (
                 <p className="hidden sm:block text-zinc-300 text-xs md:text-sm line-clamp-2 mb-3 max-w-2xl">
-                  {article.summary ?? article.aiSummary}
+                  {article.summary || article.aiSummary}
                 </p>
               )}
               <div className="flex items-center gap-3 text-xs text-zinc-400">
