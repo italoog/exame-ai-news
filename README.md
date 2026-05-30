@@ -129,7 +129,7 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 
 ### Autenticação & Usuários
 - **Registro e login** com validação Zod
-- **JWT com Refresh Token rotation** — access token curto (15min), refresh token longo (7d)
+- **JWT com Refresh Token rotation** — access token curto (1h), refresh token longo (7d)
 - **Logout com invalidação** do refresh token no banco
 - **Recuperação de senha** via e-mail (token único, TTL configurável)
 - **Perfil do usuário** com edição de nome, bio e avatar
@@ -148,7 +148,7 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 - **Dashboard do editor** com lista de artigos próprios e ações rápidas
 
 ### Inteligência Artificial
-- **AI Summary** — BullMQ job enfileira geração de resumo automático via OpenAI/Groq/Gemini após publicação
+- **AI Summary** — BullMQ job enfileira geração de resumo automático após publicação. Provedor primário: Gemini; fallback: Groq (llama-3.3-70b); exibido nos cards via `aiSummary` quando `summary` está vazio
 - **Auto-tagging** — análise de conteúdo para sugestão de tags relevantes
 - **Trending algorithm** — job periódico que calcula artigos em alta com base em views e tempo
 - **Recomendações** — engine baseada em histórico de leitura e preferências do usuário
@@ -400,7 +400,7 @@ EASYPANEL_DEPLOY_WEB_URL  → webhook de rebuild do Web
 | **ISR com `revalidate`** | Homepage e artigos usam ISR (60s); trending usa 5min — equilibra performance e frescor dos dados |
 | **`NEXT_PUBLIC_*` em build-time** | `ARG/ENV` no Dockerfile garante que o bundle do cliente tenha a URL correta |
 | **BullMQ para IA** | Jobs pesados de IA não bloqueiam a request HTTP; processados em background |
-| **JWT + Refresh Rotation** | Access token curto (15min) reduz janela de ataque; refresh com rotação previne reuse |
+| **JWT + Refresh Rotation** | Access token curto (1h, configurável via `JWT_EXPIRES_IN`) reduz janela de ataque; refresh com rotação previne reuse |
 | **Repository Pattern (Prisma)** | Isola acesso a dados; facilita testes unitários com mocks |
 | **Índices compostos** | `(status, publishedAt)` e `(featured, status)` cobrem as queries mais frequentes |
 | **Docker multi-stage** | Imagem final sem devDependencies e sem código-fonte exposto |
