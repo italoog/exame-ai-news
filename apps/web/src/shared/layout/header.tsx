@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Search, Menu, X, User, LogOut, Settings, Bookmark, Edit2 } from 'lucide-react'
 import { useAuthStore } from '@/shared/stores/auth.store'
+import { api } from '@/shared/lib/api'
 
 const NAV_LINKS = [
   { label: 'Tecnologia', href: '/categories/tecnologia' },
@@ -16,6 +17,21 @@ const NAV_LINKS = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { user, isAuthenticated, clearAuth } = useAuthStore()
+
+  async function handleLogout() {
+    try {
+      const refreshToken = typeof window !== 'undefined'
+        ? localStorage.getItem('refresh_token')
+        : null
+      if (refreshToken) await api.post('/auth/logout', { refreshToken })
+    } catch {
+      // best-effort — invalida localmente mesmo se a chamada falhar
+    } finally {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      clearAuth()
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 transition-colors">
@@ -76,7 +92,7 @@ export function Header() {
                       <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 rounded-lg"><Settings className="w-4 h-4" /> Painel Admin</Link>
                     )}
                     <hr className="my-1 border-zinc-100 dark:border-zinc-700" />
-                    <button onClick={clearAuth} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
+                    <button onClick={handleLogout} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
                       <LogOut className="w-4 h-4" /> Sair
                     </button>
                   </div>

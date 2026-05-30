@@ -32,9 +32,10 @@ export function LoginForm() {
   async function onSubmit(data: LoginFormData) {
     try {
       const { data: response } = await api.post('/auth/login', data)
-      const { accessToken } = response.data ?? response
+      const { accessToken, refreshToken } = response.data ?? response
 
       localStorage.setItem('access_token', accessToken)
+      localStorage.setItem('refresh_token', refreshToken)
 
       const { data: userResponse } = await api.get('/users/me', {
         headers: { Authorization: `Bearer ${accessToken}` },
