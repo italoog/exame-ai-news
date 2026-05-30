@@ -156,6 +156,7 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 
 ### Inteligência Artificial
 
+- **AI Chat** — widget de chat na página do artigo: o usuário faz perguntas sobre o conteúdo e recebe respostas em streaming com efeito typewriter; suporta até 6 turnos de conversa com histórico de contexto; perguntas sugeridas pré-definidas; rate-limit de 10 req/min
 - **AI Summary** — BullMQ job enfileira geração de resumo automático após publicação. Provedor primário: Gemini; fallback: Groq (llama-3.3-70b); exibido nos cards via `aiSummary` quando `summary` está vazio
 - **Auto-tagging** — análise de conteúdo para sugestão de tags relevantes
 - **Trending algorithm** — job periódico que calcula artigos em alta com base em views e tempo
@@ -259,17 +260,18 @@ model NewsletterSubscriber { email (unique) }
 
 ### Outros módulos
 
-| Módulo          | Rota base                    | Destaques                        |
-| --------------- | ---------------------------- | -------------------------------- |
-| Users           | `/api/users`                 | CRUD, troca de role              |
-| Categories      | `/api/categories`            | CRUD, busca por slug             |
-| Tags            | `/api/tags`                  | Listagem, populares              |
-| Comments        | `/api/articles/:id/comments` | CRUD, likes, aninhados           |
-| Favorites       | `/api/favorites`             | Toggle, verificação de estado    |
-| Analytics       | `/api/analytics`             | Eventos, dashboard, top articles |
-| Recommendations | `/api/recommendations`       | For-you, popular, similar        |
-| Newsletter      | `/api/newsletter`            | Subscribe (rate-limit: 5/min)    |
-| Health          | `/api/health`                | Status dos serviços              |
+| Módulo          | Rota base                    | Destaques                                                      |
+| --------------- | ---------------------------- | -------------------------------------------------------------- |
+| Users           | `/api/users`                 | CRUD, troca de role                                            |
+| Categories      | `/api/categories`            | CRUD, busca por slug                                           |
+| Tags            | `/api/tags`                  | Listagem, populares                                            |
+| Comments        | `/api/articles/:id/comments` | CRUD, likes, aninhados                                         |
+| Favorites       | `/api/favorites`             | Toggle, verificação de estado                                  |
+| Analytics       | `/api/analytics`             | Eventos, dashboard, top articles                               |
+| Recommendations | `/api/recommendations`       | For-you, popular, similar                                      |
+| AI              | `/api/ai`                    | `POST /chat` — streaming Q&A sobre artigo (rate-limit: 10/min) |
+| Newsletter      | `/api/newsletter`            | Subscribe (rate-limit: 5/min)                                  |
+| Health          | `/api/health`                | Status dos serviços                                            |
 
 > **Documentação interativa (Swagger):** [`/api/docs`](https://exame-ai-api.fzsuah.easypanel.host/api/docs)
 
