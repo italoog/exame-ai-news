@@ -1,0 +1,5 @@
+echo "🔍 Verificando tipos antes do push..."
+pnpm --filter @exame/api exec prisma generate --silent 2>/dev/null || true
+pnpm --filter @exame/api exec tsc --noEmit
+pnpm --filter @exame/web exec tsc --noEmit
+echo "✅ Typecheck passou!"

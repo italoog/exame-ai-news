@@ -6,13 +6,26 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{js,json,md,css}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "prettier": "^3.0.0",
     "@exame/eslint-config": "workspace:*",
-    "@exame/typescript-config": "workspace:*"
+    "@exame/typescript-config": "workspace:*",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.6",
+    "prettier": "^3.0.0",
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "turbo": "^2.0.0"
   },
   "packageManager": "pnpm@9.0.0"
 }
