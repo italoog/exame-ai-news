@@ -16,18 +16,33 @@ export const QUEUE_RECOMMENDATIONS = 'recommendations'
   imports: [
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          host: config.get('REDIS_HOST', 'localhost'),
-          port: config.get<number>('REDIS_PORT', 6379),
-        },
-        defaultJobOptions: {
-          removeOnComplete: 100,
-          removeOnFail: 50,
-          attempts: 3,
-          backoff: { type: 'exponential', delay: 1000 },
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const redisUrl = config.get<string>('REDIS_URL');
+        let connection: { host: string; port: number; password?: string; username?: string };
+        if (redisUrl) {
+          const parsed = new URL(redisUrl);
+          connection = {
+            host: parsed.hostname,
+            port: parseInt(parsed.port || '6379', 10),
+            password: parsed.password || undefined,
+            username: parsed.username || undefined,
+          };
+        } else {
+          connection = {
+            host: config.get('REDIS_HOST', 'localhost'),
+            port: config.get<number>('REDIS_PORT', 6379),
+          };
+        }
+        return {
+          connection,
+          defaultJobOptions: {
+            removeOnComplete: 100,
+            removeOnFail: 50,
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 1000 },
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     BullModule.registerQueue(
