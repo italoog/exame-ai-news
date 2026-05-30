@@ -25,6 +25,7 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const [isThinking, setIsThinking] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -50,11 +51,16 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setIsStreaming(true)
+    setIsThinking(true)
 
     // Placeholder da resposta da IA (vai sendo preenchido pelo stream)
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
     abortRef.current = new AbortController()
+
+    // Delay intencional para dar a impressão de que a IA está "pensando"
+    await new Promise<void>((resolve) => setTimeout(resolve, 900))
+    setIsThinking(false)
 
     try {
       const res = await fetch(`${apiUrl}/ai/chat`, {
@@ -100,6 +106,7 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
         return updated
       })
     } finally {
+      setIsThinking(false)
       setIsStreaming(false)
       abortRef.current = null
     }
@@ -184,10 +191,21 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-bl-sm'
                       }`}
                     >
-                      {msg.content}
-                      {/* Cursor de streaming */}
-                      {msg.role === 'assistant' && isStreaming && i === messages.length - 1 && (
-                        <span className="inline-block w-0.5 h-4 bg-zinc-400 dark:bg-zinc-500 ml-0.5 animate-pulse align-text-bottom" />
+                      {/* Animação de "pensando" com pontos */}
+                      {msg.role === 'assistant' && isThinking && i === messages.length - 1 ? (
+                        <span className="inline-flex items-center gap-1 py-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce [animation-delay:0ms]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce [animation-delay:150ms]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce [animation-delay:300ms]" />
+                        </span>
+                      ) : (
+                        <>
+                          {msg.content}
+                          {/* Cursor piscante de digitação */}
+                          {msg.role === 'assistant' && isStreaming && !isThinking && i === messages.length - 1 && (
+                            <span className="inline-block w-[2px] h-[1em] bg-zinc-500 dark:bg-zinc-400 ml-0.5 align-text-bottom animate-blink" />
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

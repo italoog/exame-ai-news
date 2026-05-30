@@ -176,6 +176,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       )}
 
+      {/* AI Chat */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 mb-8">
+        <ArticleAiChat articleId={article.id} />
+      </div>
+
       {/* Article Content */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-12">
         <div
@@ -205,8 +210,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
         )}
 
-        {/* AI Chat */}
-        <ArticleAiChat articleId={article.id} />
       </div>
     </article>
   )
