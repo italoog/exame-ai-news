@@ -1,227 +1,243 @@
-'use client'
-import { useState } from 'react'
-import { Heart, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+﻿'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { MessageCircle, Heart, Trash2, Reply, Send, Loader2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useAuthStore } from '@/shared/stores/auth.store';
 import {
   useComments,
   useCreateComment,
-  useToggleCommentLike,
+  useDeleteComment,
+  useLikeComment,
   type Comment,
-} from '@/shared/hooks/use-comments'
-import { useAuthStore } from '@/shared/stores/auth.store'
+} from '@/shared/hooks/use-comments';
 
 interface CommentItemProps {
-  comment: Comment
-  articleId: string
-  depth?: number
+  comment: Comment;
+  articleId: string;
+  currentUserId?: string;
+  isAdmin?: boolean;
+  depth?: number;
 }
 
-function CommentItem({ comment, articleId, depth = 0 }: CommentItemProps) {
-  const [replyOpen, setReplyOpen] = useState(false)
-  const [repliesVisible, setRepliesVisible] = useState(false)
-  const [replyText, setReplyText] = useState('')
-  const { user } = useAuthStore()
-  const createComment = useCreateComment()
-  const toggleLike = useToggleCommentLike()
+function CommentItem({ comment, articleId, currentUserId, isAdmin, depth = 0 }: CommentItemProps) {
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const createComment = useCreateComment(articleId);
+  const deleteComment = useDeleteComment(articleId);
+  const likeComment = useLikeComment(articleId);
 
-  async function handleReply(e: React.FormEvent) {
-    e.preventDefault()
-    if (!replyText.trim()) return
-    await createComment.mutateAsync({
-      articleId,
-      content: replyText,
-      parentId: comment.id,
-    })
-    setReplyText('')
-    setReplyOpen(false)
+  const timeAgo = formatDistanceToNow(new Date(comment.createdAt), {
+    addSuffix: true,
+    locale: ptBR,
+  });
+
+  async function handleReply() {
+    if (!replyText.trim()) return;
+    await createComment.mutateAsync({ content: replyText.trim(), parentId: comment.id });
+    setReplyText('');
+    setReplyOpen(false);
   }
 
-  const replyCount = comment._count?.replies ?? comment.replies?.length ?? 0
+  const canDelete = currentUserId === comment.user.id || isAdmin;
 
   return (
-    <div className={`flex gap-3 ${depth > 0 ? 'ml-8 mt-4' : ''}`}>
-      <div className="flex-shrink-0">
-        {comment.author.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={comment.author.avatar}
-            alt={comment.author.name}
-            width={36}
-            height={36}
-            className="w-9 h-9 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-semibold text-sm">
-            {comment.author.name.charAt(0).toUpperCase()}
-          </div>
-        )}
-      </div>
-      <div className="flex-1">
-        <div className="bg-zinc-50 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-semibold text-zinc-900">
-              {comment.author.name}
+    <div className={depth > 0 ? 'ml-8 mt-3' : ''}>
+      <div className="flex gap-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+          {comment.user.avatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={comment.user.avatar}
+              alt={comment.user.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">
+              {comment.user.name[0]?.toUpperCase()}
             </span>
-            <span className="text-xs text-zinc-400">
-              {formatDistanceToNow(new Date(comment.createdAt), {
-                addSuffix: true,
-                locale: ptBR,
-              })}
-            </span>
-          </div>
-          <p className="text-sm text-zinc-700">{comment.content}</p>
-        </div>
-        <div className="flex items-center gap-4 mt-2 text-xs text-zinc-500">
-          <button
-            onClick={() => user && toggleLike.mutate(comment.id)}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
-          >
-            <Heart className="h-3.5 w-3.5" />
-            {comment._count?.likes ?? 0}
-          </button>
-          {depth === 0 && user && (
-            <button
-              onClick={() => setReplyOpen(!replyOpen)}
-              className="flex items-center gap-1 hover:text-primary-600 transition-colors"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              Responder
-            </button>
-          )}
-          {depth === 0 && replyCount > 0 && (
-            <button
-              onClick={() => setRepliesVisible(!repliesVisible)}
-              className="flex items-center gap-1 hover:text-primary-600 transition-colors"
-            >
-              {repliesVisible ? (
-                <ChevronUp className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" />
-              )}
-              {replyCount} respostas
-            </button>
           )}
         </div>
-        {replyOpen && (
-          <form onSubmit={handleReply} className="mt-3 flex gap-2">
-            <input
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Escreva uma resposta..."
-              className="flex-1 text-sm border border-zinc-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-600"
-            />
+
+        <div className="min-w-0 flex-1">
+          <div className="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-zinc-800/60">
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {comment.user.name}
+              </span>
+              <span className="shrink-0 text-xs text-zinc-400 dark:text-zinc-500">{timeAgo}</span>
+            </div>
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+              {comment.content}
+            </p>
+          </div>
+
+          <div className="mt-1.5 flex items-center gap-3 px-1">
             <button
-              type="submit"
-              disabled={createComment.isPending}
-              className="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              onClick={() => likeComment.mutate(comment.id)}
+              disabled={likeComment.isPending}
+              className="flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
             >
-              Responder
+              <Heart className="h-3.5 w-3.5" />
+              {comment.likeCount > 0 && <span>{comment.likeCount}</span>}
             </button>
-          </form>
-        )}
-        {repliesVisible &&
-          comment.replies?.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              articleId={articleId}
-              depth={1}
-            />
-          ))}
+
+            {currentUserId && depth === 0 && (
+              <button
+                onClick={() => setReplyOpen((v) => !v)}
+                className="flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300"
+              >
+                <Reply className="h-3.5 w-3.5" />
+                Responder
+              </button>
+            )}
+
+            {canDelete && (
+              <button
+                onClick={() => deleteComment.mutate(comment.id)}
+                disabled={deleteComment.isPending}
+                className="ml-auto flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          {replyOpen && (
+            <div className="mt-2 flex gap-2">
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Escreva uma resposta..."
+                rows={2}
+                className="flex-1 resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+              <button
+                onClick={handleReply}
+                disabled={createComment.isPending || !replyText.trim()}
+                className="self-end rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+              >
+                {createComment.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+
+      {comment.replies?.map((reply) => (
+        <CommentItem
+          key={reply.id}
+          comment={reply}
+          articleId={articleId}
+          currentUserId={currentUserId}
+          isAdmin={isAdmin}
+          depth={depth + 1}
+        />
+      ))}
     </div>
-  )
+  );
 }
 
-interface Props {
-  articleId: string
+interface CommentsSectionProps {
+  articleId: string;
 }
 
-export function CommentsSection({ articleId }: Props) {
-  const { data, isLoading } = useComments(articleId)
-  const { user } = useAuthStore()
-  const createComment = useCreateComment()
-  const [text, setText] = useState('')
+export function CommentsSection({ articleId }: CommentsSectionProps) {
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const [text, setText] = useState('');
+  const { data: comments, isLoading } = useComments(articleId);
+  const createComment = useCreateComment(articleId);
 
-  const comments = data?.data ?? []
+  const count = comments?.length ?? 0;
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!text.trim()) return
-    await createComment.mutateAsync({ articleId, content: text })
-    setText('')
+    e.preventDefault();
+    if (!text.trim()) return;
+    await createComment.mutateAsync({ content: text.trim() });
+    setText('');
   }
 
   return (
-    <section className="mt-10 pt-8 border-t border-zinc-200">
-      <h2 className="text-xl font-bold text-zinc-900 mb-6">
-        Comentários ({comments.length})
+    <section className="mt-8 border-t border-zinc-100 pt-8 dark:border-zinc-800">
+      <h2 className="mb-6 flex items-center gap-2 text-lg font-bold text-zinc-900 dark:text-zinc-100">
+        <MessageCircle className="h-5 w-5" />
+        ComentÃ¡rios
+        {count > 0 && (
+          <span className="text-sm font-normal text-zinc-400 dark:text-zinc-500">({count})</span>
+        )}
       </h2>
 
+      {/* Form */}
       {user ? (
         <form onSubmit={handleSubmit} className="mb-8 flex gap-3">
-          <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-semibold text-sm flex-shrink-0">
-            {user.name.charAt(0).toUpperCase()}
+          <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+            {user.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.avatar} alt={user.name ?? ''} className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                {user.name?.[0]?.toUpperCase()}
+              </span>
+            )}
           </div>
-          <div className="flex-1">
+          <div className="flex flex-1 gap-2">
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Deixe um comentário..."
+              placeholder="Escreva um comentÃ¡rio..."
               rows={3}
-              className="w-full border border-zinc-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-600 resize-none"
+              className="flex-1 resize-none rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             />
-            <div className="flex justify-end mt-2">
-              <button
-                type="submit"
-                disabled={createComment.isPending || !text.trim()}
-                className="px-5 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
-              >
-                Comentar
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={createComment.isPending || !text.trim()}
+              className="self-end rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+            >
+              {createComment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Publicar'}
+            </button>
           </div>
         </form>
       ) : (
-        <div className="mb-8 p-4 bg-zinc-50 rounded-lg text-sm text-zinc-600 text-center">
-          <a
-            href="/auth/login"
-            className="text-primary-600 hover:underline font-medium"
+        <div className="mb-8 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400">
+          <button
+            onClick={() => router.push('/auth/login')}
+            className="font-medium text-red-600 hover:underline"
           >
-            Faça login
-          </a>{' '}
-          para deixar um comentário
+            FaÃ§a login
+          </button>{' '}
+          para deixar um comentÃ¡rio.
         </div>
       )}
 
+      {/* List */}
       {isLoading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex gap-3">
-              <div className="w-9 h-9 rounded-full bg-zinc-200 animate-pulse flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-zinc-200 animate-pulse rounded w-1/4" />
-                <div className="h-12 bg-zinc-200 animate-pulse rounded" />
-              </div>
-            </div>
-          ))}
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
         </div>
-      ) : comments.length === 0 ? (
-        <p className="text-zinc-400 text-center py-8">
-          Seja o primeiro a comentar!
+      ) : count === 0 ? (
+        <p className="py-6 text-center text-sm text-zinc-400 dark:text-zinc-500">
+          Nenhum comentÃ¡rio ainda. Seja o primeiro!
         </p>
       ) : (
-        <div className="space-y-6">
-          {comments.map((comment) => (
+        <div className="space-y-4">
+          {comments!.map((comment) => (
             <CommentItem
               key={comment.id}
               comment={comment}
               articleId={articleId}
+              currentUserId={user?.id}
+              isAdmin={user?.role === 'ADMIN'}
             />
           ))}
         </div>
       )}
     </section>
-  )
+  );
 }
