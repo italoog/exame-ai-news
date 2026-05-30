@@ -363,11 +363,12 @@ make help         # Lista todos os comandos disponíveis
 ### Infraestrutura (Easypanel + Docker Swarm)
 
 ```
-Easypanel (VPS 163.176.191.113)
-├── exame-ai_web      → Next.js standalone  (porta 3000)
-├── exame-ai_api      → NestJS              (porta 3001)
-├── exame-ai_postgres → PostgreSQL 16       (porta 5432)
-└── exame-ai_redis    → Redis 7             (porta 6379)
+Oracle Cloud VPS — Ubuntu 24.04 LTS (163.176.191.113)
+└── Easypanel v2 (Docker Swarm)
+    ├── exame-ai_web      → Next.js standalone  (porta 3000)
+    ├── exame-ai_api      → NestJS              (porta 3001)
+    ├── exame-ai_postgres → PostgreSQL 16       (porta 5432)
+    └── exame-ai_redis    → Redis 7             (porta 6379)
 ```
 
 ### CI/CD (GitHub Actions)
