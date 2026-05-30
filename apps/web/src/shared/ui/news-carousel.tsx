@@ -63,7 +63,7 @@ export function NewsCarousel({ articles }: Props) {
   const article = articles[current]
 
   return (
-    <section className="relative overflow-hidden rounded-2xl shadow-exame-lg">
+    <section className="relative overflow-hidden rounded-2xl shadow-exame-lg h-full min-h-[420px]">
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
@@ -125,8 +125,7 @@ export function NewsCarousel({ articles }: Props) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Height spacer */}
-      <div className="aspect-[4/3] md:aspect-[16/7] pointer-events-none opacity-0 select-none" aria-hidden />
+
 
       {/* Arrows */}
       <button

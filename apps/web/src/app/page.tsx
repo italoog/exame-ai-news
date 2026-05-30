@@ -85,7 +85,7 @@ export default async function HomePage() {
         {/* Main Grid: Featured + Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Featured Carousel */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 h-full">
             {carouselArticles.length > 0 ? (
               <NewsCarousel articles={carouselArticles} />
             ) : (
