@@ -30,7 +30,7 @@ O projeto foi construído como monorepo com **Next.js 15** no frontend e **NestJ
 | **React Hook Form + Zod**   | Formulários com validação tipada                      |
 | **TipTap**                  | Editor de texto rico para artigos                     |
 | **Axios**                   | HTTP client com interceptors de auth                  |
-| **next-themes**             | Dark/light mode persistente                           |
+| **next-themes**             | Instalado (não utilizado — dark mode via Zustand)     |
 | **Framer Motion**           | Animações e transições                                |
 
 ### Backend — `apps/api`
@@ -130,7 +130,7 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 - **Busca em tempo real** com debounce por título, conteúdo e tags
 - **Filtro por categoria** (Tecnologia, Economia, Mercados, Startups, Negócios, Internacional)
 - **Artigos relacionados** e recomendações personalizadas
-- **Dark mode** persistente via next-themes + Zustand
+- **Dark mode** persistente via Zustand (`exame-theme` em localStorage); toggle de classe `dark` no `<html>`
 
 ### Autenticação & Usuários
 

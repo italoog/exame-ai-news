@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Res, HttpCode } from '@nestjs/common'
-import { ApiTags, ApiOperation } from '@nestjs/swagger'
-import { Throttle } from '@nestjs/throttler'
-import { Response } from 'express'
-import { AiService } from './ai.service'
-import { AiChatDto } from './dto/ai-chat.dto'
+import { Controller, Post, Body, Res, HttpCode } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import { Response } from 'express';
+import { AiService } from './ai.service';
+import { AiChatDto } from './dto/ai-chat.dto';
+import { SuggestTagsDto } from './dto/suggest-tags.dto';
 
 @ApiTags('ai')
 @Controller('ai')
@@ -15,25 +16,29 @@ export class AiController {
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Chat com IA sobre um artigo (streaming)' })
   async chat(@Body() dto: AiChatDto, @Res() res: Response): Promise<void> {
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.setHeader('Transfer-Encoding', 'chunked')
-    res.setHeader('Cache-Control', 'no-cache, no-transform')
-    res.setHeader('X-Accel-Buffering', 'no')
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('X-Accel-Buffering', 'no');
 
     try {
-      await this.aiService.streamChat(
-        dto.articleId,
-        dto.question,
-        dto.history ?? [],
-        res,
-      )
+      await this.aiService.streamChat(dto.articleId, dto.question, dto.history ?? [], res);
     } catch {
       if (!res.headersSent) {
-        res.status(500).json({ message: 'Serviço de IA indisponível' })
-        return
+        res.status(500).json({ message: 'Serviço de IA indisponível' });
+        return;
       }
     } finally {
-      res.end()
+      res.end();
     }
+  }
+
+  @Post('suggest-tags')
+  @HttpCode(200)
+  @Throttle({ short: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Sugerir tags para um artigo via IA' })
+  async suggestTags(@Body() dto: SuggestTagsDto) {
+    const tags = await this.aiService.suggestTags(dto.title, dto.content);
+    return { data: tags };
   }
 }

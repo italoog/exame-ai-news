@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from '../../database/prisma.service'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class RecommendationsService {
@@ -18,22 +18,17 @@ export class RecommendationsService {
       },
       orderBy: { readAt: 'desc' },
       take: 20,
-    })
+    });
 
-    const readArticleIds = history.map((h) => h.articleId)
-    const categoryIds = [...new Set(history.map((h) => h.article.categoryId))]
-    const tagIds = [
-      ...new Set(history.flatMap((h) => h.article.tags.map((t) => t.tagId))),
-    ]
+    const readArticleIds = history.map((h) => h.articleId);
+    const categoryIds = [...new Set(history.map((h) => h.article.categoryId))];
+    const tagIds = [...new Set(history.flatMap((h) => h.article.tags.map((t) => t.tagId)))];
 
     const recommended = await this.prisma.article.findMany({
       where: {
         status: 'PUBLISHED',
         id: { notIn: readArticleIds },
-        OR: [
-          { categoryId: { in: categoryIds } },
-          { tags: { some: { tagId: { in: tagIds } } } },
-        ],
+        OR: [{ categoryId: { in: categoryIds } }, { tags: { some: { tagId: { in: tagIds } } } }],
       },
       include: {
         author: { select: { id: true, name: true, avatar: true } },
@@ -43,7 +38,7 @@ export class RecommendationsService {
       },
       orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }],
       take: limit,
-    })
+    });
 
     if (recommended.length < limit) {
       const popular = await this.prisma.article.findMany({
@@ -59,11 +54,11 @@ export class RecommendationsService {
         },
         orderBy: { viewCount: 'desc' },
         take: limit - recommended.length,
-      })
-      return [...recommended, ...popular]
+      });
+      return [...recommended, ...popular];
     }
 
-    return recommended
+    return recommended;
   }
 
   /**
@@ -80,7 +75,7 @@ export class RecommendationsService {
       },
       orderBy: { viewCount: 'desc' },
       take: limit,
-    })
+    });
   }
 
   /**
@@ -93,20 +88,17 @@ export class RecommendationsService {
         categoryId: true,
         tags: { select: { tagId: true } },
       },
-    })
+    });
 
-    if (!article) return []
+    if (!article) return [];
 
-    const tagIds = article.tags.map((t) => t.tagId)
+    const tagIds = article.tags.map((t) => t.tagId);
 
     return this.prisma.article.findMany({
       where: {
         status: 'PUBLISHED',
         id: { not: articleId },
-        OR: [
-          { categoryId: article.categoryId },
-          { tags: { some: { tagId: { in: tagIds } } } },
-        ],
+        OR: [{ categoryId: article.categoryId }, { tags: { some: { tagId: { in: tagIds } } } }],
       },
       include: {
         author: { select: { id: true, name: true, avatar: true } },
@@ -115,17 +107,31 @@ export class RecommendationsService {
       },
       orderBy: { viewCount: 'desc' },
       take: limit,
-    })
+    });
   }
 
   /**
    * Registra ou atualiza a leitura de um artigo no histórico do usuário.
    */
-  async trackReadHistory(userId: string, articleId: string): Promise<void> {
+  async trackReadHistory(
+    userId: string,
+    articleId: string,
+    timeSpent?: number,
+    completed?: boolean,
+  ): Promise<void> {
     await this.prisma.readHistory.upsert({
       where: { userId_articleId: { userId, articleId } },
-      create: { userId, articleId },
-      update: { readAt: new Date() },
-    })
+      create: {
+        userId,
+        articleId,
+        readTimeSpent: timeSpent ?? null,
+        completed: completed ?? false,
+      },
+      update: {
+        readAt: new Date(),
+        ...(timeSpent !== undefined && { readTimeSpent: timeSpent }),
+        ...(completed !== undefined && { completed }),
+      },
+    });
   }
 }

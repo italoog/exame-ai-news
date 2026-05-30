@@ -10,7 +10,9 @@ import { CategoryBadge } from '@/shared/ui/category-badge';
 import { getCoverImage } from '@/shared/lib/cover-image';
 import { FavoriteButton } from '@/shared/ui/favorite-button';
 import { ArticleAiChat } from '@/shared/ui/article-ai-chat';
+import { ArticleCard } from '@/shared/ui/article-card';
 import { CommentsSection } from './comments-section';
+import { ReadTracker } from './read-tracker';
 
 export const revalidate = 60;
 
@@ -46,6 +48,35 @@ async function getArticle(slug: string): Promise<Article | null> {
     return 'data' in json ? json.data : json;
   } catch {
     return null;
+  }
+}
+
+type RelatedArticle = {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string | null;
+  aiSummary: string | null;
+  coverImage: string | null;
+  publishedAt: string | null;
+  readTime: number | null;
+  viewCount: number;
+  author: { id: string; name: string; avatar: string | null };
+  category: { id: string; name: string; slug: string; color: string | null };
+};
+
+async function getRelatedArticles(articleId: string): Promise<RelatedArticle[]> {
+  const apiUrl =
+    process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+  try {
+    const res = await fetch(`${apiUrl}/recommendations/similar/${articleId}`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const json = (await res.json()) as { data: RelatedArticle[] } | RelatedArticle[];
+    return Array.isArray(json) ? json : (json.data ?? []);
+  } catch {
+    return [];
   }
 }
 
@@ -88,12 +119,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const article = await getArticle(slug);
   if (!article) notFound();
 
+  const [relatedArticles] = await Promise.all([getRelatedArticles(article.id)]);
+
   const publishedDate = article.publishedAt
     ? format(new Date(article.publishedAt), "d 'de' MMMM 'de' yyyy", { locale: ptBR })
     : null;
 
   return (
     <article className="min-h-screen bg-white transition-colors dark:bg-zinc-950">
+      <ReadTracker articleId={article.id} />
       {/* Breadcrumb */}
       <div className="mx-auto max-w-3xl px-4 pt-6 sm:px-6">
         <nav className="flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
@@ -232,6 +266,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         {/* Comments */}
         <CommentsSection articleId={article.id} />
       </div>
+
+      {/* Related Articles */}
+      {relatedArticles.length > 0 && (
+        <div className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
+          <div className="border-t border-zinc-100 pt-10 dark:border-zinc-800">
+            <h2 className="mb-6 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+              Artigos relacionados
+            </h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {relatedArticles.slice(0, 3).map((a) => (
+                <ArticleCard key={a.id} article={a} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
