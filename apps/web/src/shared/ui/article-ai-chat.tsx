@@ -26,9 +26,11 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const streamBufferRef = useRef('')
+  const typeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
@@ -38,9 +40,55 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
     }
   }, [isOpen])
 
+  // Scroll apenas o container interno — nunca a página
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
   }, [messages])
+
+  // Typewriter: avança o texto exibido char a char a partir do buffer do stream
+  useEffect(() => {
+    if (isStreaming) {
+      typeIntervalRef.current = setInterval(() => {
+        const full = streamBufferRef.current
+        setMessages((prev) => {
+          const last = prev[prev.length - 1]
+          if (!last || last.role !== 'assistant') return prev
+          const currentLen = last.content.length
+          if (currentLen >= full.length) return prev
+          const nextLen = Math.min(currentLen + 4, full.length)
+          const updated = [...prev]
+          updated[updated.length - 1] = { ...last, content: full.slice(0, nextLen) }
+          return updated
+        })
+      }, 15)
+    } else {
+      if (typeIntervalRef.current) {
+        clearInterval(typeIntervalRef.current)
+        typeIntervalRef.current = null
+      }
+      // Garante que o texto completo seja exibido ao final do stream
+      const remaining = streamBufferRef.current
+      if (remaining) {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1]
+          if (!last || last.role !== 'assistant') return prev
+          if (last.content === remaining) return prev
+          const updated = [...prev]
+          updated[updated.length - 1] = { ...last, content: remaining }
+          return updated
+        })
+        streamBufferRef.current = ''
+      }
+    }
+    return () => {
+      if (typeIntervalRef.current) {
+        clearInterval(typeIntervalRef.current)
+        typeIntervalRef.current = null
+      }
+    }
+  }, [isStreaming])
 
   async function sendMessage(question: string) {
     if (!question.trim() || isStreaming) return
@@ -88,14 +136,11 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
         if (done) break
         const chunk = decoder.decode(value, { stream: true })
         accumulated += chunk
-
-        setMessages((prev) => {
-          const updated = [...prev]
-          updated[updated.length - 1] = { role: 'assistant', content: accumulated }
-          return updated
-        })
+        // Só atualiza o buffer — o typewriter interval cuida de exibir
+        streamBufferRef.current = accumulated
       }
     } catch (err: unknown) {
+      streamBufferRef.current = '' // impede flush de sobrescrever msg de erro
       if (err instanceof Error && err.name === 'AbortError') return
       setMessages((prev) => {
         const updated = [...prev]
@@ -162,7 +207,7 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
           </div>
 
           {/* Mensagens */}
-          <div className="h-72 overflow-y-auto p-4 space-y-4">
+          <div ref={chatContainerRef} className="h-72 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
               <div className="space-y-3">
                 <p className="text-xs text-zinc-400 dark:text-zinc-500 text-center">
@@ -210,7 +255,7 @@ export function ArticleAiChat({ articleId }: ArticleAiChatProps) {
                     </div>
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
+
               </>
             )}
           </div>
