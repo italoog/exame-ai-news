@@ -63,7 +63,7 @@ export function NewsCarousel({ articles }: Props) {
   const article = articles[current]
 
   return (
-    <section className="relative overflow-hidden rounded-2xl shadow-exame-lg h-full min-h-[420px]">
+    <section className="relative overflow-hidden rounded-2xl shadow-exame-lg h-[480px]">
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
