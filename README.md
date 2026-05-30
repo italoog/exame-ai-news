@@ -396,7 +396,7 @@ EASYPANEL_DEPLOY_WEB_URL  → webhook de rebuild do Web
 |---------|-----------|
 | **Monorepo com Turborepo** | Builds incrementais, cache remoto e compartilhamento de configs/tipos |
 | **App Router (Next.js 15)** | Server Components por padrão para SEO e performance; Client Components só onde necessário |
-| **`cache: 'no-store'` em artigos** | Garante que edições apareçam imediatamente sem cache stale |
+| **ISR com `revalidate`** | Homepage e artigos usam ISR (60s); trending usa 5min — equilibra performance e frescor dos dados |
 | **`NEXT_PUBLIC_*` em build-time** | `ARG/ENV` no Dockerfile garante que o bundle do cliente tenha a URL correta |
 | **BullMQ para IA** | Jobs pesados de IA não bloqueiam a request HTTP; processados em background |
 | **JWT + Refresh Rotation** | Access token curto (15min) reduz janela de ataque; refresh com rotação previne reuse |

@@ -10,7 +10,7 @@ import { CategoryBadge } from '@/shared/ui/category-badge'
 import { getCoverImage } from '@/shared/lib/cover-image'
 import { FavoriteButton } from '@/shared/ui/favorite-button'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>
@@ -36,7 +36,7 @@ async function getArticle(slug: string): Promise<Article | null> {
   const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
   try {
     const res = await fetch(`${apiUrl}/articles/${encodeURIComponent(slug)}`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
     })
     if (!res.ok) return null
     const json = await res.json() as Article | { data: Article }
