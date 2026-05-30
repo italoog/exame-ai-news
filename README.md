@@ -83,8 +83,7 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 │   ├── typescript-config/       ← tsconfig (base, nestjs, nextjs)
 │   └── prettier-config/         ← Regras de formatação compartilhadas
 └── .github/
-    ├── workflows/               ← CI (ci.yml) + CD (deploy.yml)
-    └── instructions/            ← Guias para agentes IA
+    └── workflows/               ← CI (ci.yml) + CD (deploy.yml)
 ```
 
 ### Diagrama de Componentes
