@@ -6,6 +6,7 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { UsersService } from '../users/users.service'
 import { PrismaService } from '../../database/prisma.service'
+import { EmailService } from './email.service'
 import * as bcrypt from 'bcrypt'
 
 const mockUsersService = {
@@ -29,6 +30,16 @@ const mockPrismaService = {
     delete: jest.fn(),
     deleteMany: jest.fn(),
   },
+  passwordResetToken: {
+    create: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    deleteMany: jest.fn(),
+  },
+}
+
+const mockEmailService = {
+  sendPasswordReset: jest.fn(),
 }
 
 describe('AuthService', () => {
@@ -42,6 +53,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: EmailService, useValue: mockEmailService },
       ],
     }).compile()
 

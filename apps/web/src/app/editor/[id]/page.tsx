@@ -33,7 +33,7 @@ export default function EditArticlePage() {
     if (user.role !== 'EDITOR' && user.role !== 'ADMIN') { router.replace('/'); return }
 
     api
-      .get<{ id: string; title: string; summary: string | null; content: string; coverImage: string | null; status: string; category: { id: string }; tags: { tag: { name: string } }[] } | { data: { id: string; title: string; summary: string | null; content: string; coverImage: string | null; status: string; category: { id: string }; tags: { tag: { name: string } }[] } }>(`/articles/edit/${params.id}`)
+      .get<{ id: string; slug: string; title: string; summary: string | null; content: string; coverImage: string | null; status: string; category: { id: string }; tags: { tag: { name: string } }[] } | { data: { id: string; slug: string; title: string; summary: string | null; content: string; coverImage: string | null; status: string; category: { id: string }; tags: { tag: { name: string } }[] } }>(`/articles/edit/${params.id}`)
       .then((res) => {
         const a = 'data' in res.data ? res.data.data : res.data
         setInitialData({
