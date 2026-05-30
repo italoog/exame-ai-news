@@ -63,7 +63,7 @@ export function NewsCarousel({ articles }: Props) {
   const article = articles[current]
 
   return (
-    <section className="relative overflow-hidden rounded-2xl shadow-exame-lg h-[480px]">
+    <section className="relative overflow-hidden rounded-2xl shadow-exame-lg h-[260px] sm:h-[360px] md:h-[480px]">
       {/* Slides */}
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
@@ -84,31 +84,31 @@ export function NewsCarousel({ articles }: Props) {
               fill
               className="object-cover"
               priority={current === 0}
-              sizes="(max-width: 1280px) 100vw, 1280px"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 66vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
           </div>
 
           {/* Content */}
-          <div className="relative h-full flex flex-col justify-end p-6 md:p-10 lg:p-12">
+          <div className="relative h-full flex flex-col justify-end p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="max-w-3xl">
               <CategoryBadge
                 name={article.category.name}
                 slug={article.category.slug}
-                className="mb-3"
+                className="mb-2 sm:mb-3"
               />
               <Link href={`/articles/${article.slug}`}>
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight hover:text-red-300 transition-colors line-clamp-3 mb-3">
+                <h2 className="text-base sm:text-xl md:text-2xl lg:text-3xl font-black text-white leading-tight tracking-tight hover:text-red-300 transition-colors line-clamp-2 sm:line-clamp-3 mb-2 sm:mb-3">
                   {article.title}
                 </h2>
               </Link>
               {article.summary && (
-                <p className="text-zinc-300 text-sm md:text-base line-clamp-2 mb-4 max-w-2xl">
+                <p className="hidden sm:block text-zinc-300 text-xs md:text-sm line-clamp-2 mb-3 max-w-2xl">
                   {article.summary}
                 </p>
               )}
-              <div className="flex items-center gap-4 text-xs text-zinc-400">
-                <span className="font-medium text-zinc-300">{article.author.name}</span>
+              <div className="flex items-center gap-3 text-xs text-zinc-400">
+                <span className="font-medium text-zinc-300 truncate max-w-[120px] sm:max-w-none">{article.author.name}</span>
                 {article.readTime != null && (
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
@@ -130,21 +130,21 @@ export function NewsCarousel({ articles }: Props) {
       {/* Arrows */}
       <button
         onClick={prev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+        className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
         aria-label="Slide anterior"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
       <button
         onClick={next}
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
+        className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-sm"
         aria-label="Próximo slide"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-4 right-6 z-10 flex items-center gap-2" role="tablist">
+      <div className="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 z-10 flex items-center gap-2" role="tablist">
         {articles.map((_, i) => (
           <button
             key={i}
