@@ -126,7 +126,7 @@ export function NewsCarousel({ articles }: Props) {
       </AnimatePresence>
 
       {/* Height spacer */}
-      <div className="aspect-[16/7] md:aspect-[21/8] pointer-events-none opacity-0 select-none" aria-hidden />
+      <div className="aspect-[4/3] md:aspect-[16/7] pointer-events-none opacity-0 select-none" aria-hidden />
 
       {/* Arrows */}
       <button
