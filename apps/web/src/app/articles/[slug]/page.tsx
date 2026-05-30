@@ -51,6 +51,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const article = await getArticle(slug)
   if (!article) return { title: 'Artigo não encontrado' }
 
+  const ogImage = article.coverImage ?? getCoverImage(slug, article.category?.slug)
+
   return {
     title: article.title,
     description: article.summary ?? undefined,
@@ -60,6 +62,20 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       type: 'article',
       publishedTime: article.publishedAt ?? undefined,
       authors: [article.author.name],
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.summary ?? undefined,
+      images: [ogImage],
     },
   }
 }
