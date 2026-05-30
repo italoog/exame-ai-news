@@ -5,39 +5,47 @@ import { api } from '@/shared/lib/api'
 export interface Comment {
   id: string
   content: string
+  likeCount: number
   createdAt: string
-  author: { id: string; name: string; avatar: string | null }
-  _count: { likes: number; replies: number }
-  replies?: Comment[]
-  likedByUser?: boolean
+  user: { id: string; name: string; avatar: string | null }
+  replies: Comment[]
+  _count: { likes: number }
 }
 
 export function useComments(articleId: string) {
-  return useQuery<{ data: Comment[] }>({
+  return useQuery<Comment[]>({
     queryKey: ['comments', articleId],
     queryFn: () =>
-      api.get(`/comments?articleId=${articleId}`).then((r) => r.data),
+      api.get(`/articles/${articleId}/comments`).then((r) => {
+        const d = r.data
+        return (d.data ?? d) as Comment[]
+      }),
     enabled: !!articleId,
   })
 }
 
-export function useCreateComment() {
+export function useCreateComment(articleId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: {
-      articleId: string
-      content: string
-      parentId?: string
-    }) => api.post('/comments', data).then((r) => r.data),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['comments', vars.articleId] })
-    },
+    mutationFn: (payload: { content: string; parentId?: string }) =>
+      api.post(`/articles/${articleId}/comments`, payload).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', articleId] }),
   })
 }
 
-export function useToggleCommentLike() {
+export function useDeleteComment(articleId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (commentId: string) => api.delete(`/comments/${commentId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', articleId] }),
+  })
+}
+
+export function useLikeComment(articleId: string) {
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: (commentId: string) =>
-      api.post(`/comments/${commentId}/like`).then((r) => r.data),
+      api.post(`/comments/${commentId}/like`).then((r) => r.data as { liked: boolean }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', articleId] }),
   })
 }

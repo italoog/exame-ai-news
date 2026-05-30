@@ -9,7 +9,7 @@ import DOMPurify from 'isomorphic-dompurify'
 import { CategoryBadge } from '@/shared/ui/category-badge'
 import { getCoverImage } from '@/shared/lib/cover-image'
 import { FavoriteButton } from '@/shared/ui/favorite-button'
-import { ArticleAiChat } from '@/shared/ui/article-ai-chat'
+import { CommentsSection } from './comments-section'
 
 export const revalidate = 60
 
@@ -209,6 +209,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </div>
         )}
+
+        {/* Comments */}
+        <CommentsSection articleId={article.id} />
 
       </div>
     </article>
