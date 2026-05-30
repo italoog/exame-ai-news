@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArticleCard } from '@/shared/ui/article-card'
+import { NewsCarousel } from '@/shared/ui/news-carousel'
 import { TrendingUp, Zap } from 'lucide-react'
 import NewsletterForm from './newsletter-form'
 
@@ -70,6 +71,7 @@ export default async function HomePage() {
 
   const displayLatest = latest.length > 0 ? latest : []
   const displayTrending = trending.length > 0 ? trending.slice(0, 5) : []
+  const carouselArticles = latest.slice(0, 3)
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors">
@@ -128,6 +130,17 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* News Carousel */}
+        {carouselArticles.length > 0 && (
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-5">
+              <Zap className="w-4 h-4 text-red-600" />
+              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">Destaques</h2>
+            </div>
+            <NewsCarousel articles={carouselArticles} />
+          </div>
+        )}
 
         {/* Latest Articles Grid */}
         <div className="mt-14">
