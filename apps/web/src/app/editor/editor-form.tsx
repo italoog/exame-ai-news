@@ -85,10 +85,19 @@ export default function EditorForm({ initialData }: Props) {
     })
   }
 
+  async function revalidateArticle(slug?: string) {
+    await fetch('/api/revalidate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug }),
+    }).catch(() => undefined)
+  }
+
   async function onSaveDraft(data: ArticleForm) {
     try {
       if (initialData?.id) {
         await updateArticle.mutateAsync({ ...data, tags, status: 'DRAFT' })
+        await revalidateArticle(initialData.slug)
       } else {
         await createArticle.mutateAsync({ ...data, tags, status: 'DRAFT' })
       }
@@ -103,6 +112,7 @@ export default function EditorForm({ initialData }: Props) {
       if (initialData?.id) {
         await updateArticle.mutateAsync({ ...data, tags })
         await publishArticle.mutateAsync(initialData.id)
+        await revalidateArticle(initialData.slug)
       } else {
         await createArticle.mutateAsync({ ...data, tags, status: 'PUBLISHED' })
       }
