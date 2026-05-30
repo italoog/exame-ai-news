@@ -25,16 +25,6 @@ type Article = {
 
 const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api'
 
-async function fetchFeatured(): Promise<Article | null> {
-  try {
-    const res = await fetch(`${API}/articles/featured`, { next: { revalidate: 60 } })
-    if (!res.ok) return null
-    const json = await res.json() as Article[] | { data: Article[] }
-    const list = Array.isArray(json) ? json : (json.data ?? [])
-    return list[0] ?? null
-  } catch { return null }
-}
-
 async function fetchLatest(): Promise<Article[]> {
   try {
     const res = await fetch(`${API}/articles?limit=6`, { next: { revalidate: 60 } })
@@ -63,8 +53,7 @@ const CATEGORIES = [
 ]
 
 export default async function HomePage() {
-  const [featured, latest, trending] = await Promise.all([
-    fetchFeatured(),
+  const [latest, trending] = await Promise.all([
     fetchLatest(),
     fetchTrending(),
   ])
@@ -95,10 +84,10 @@ export default async function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Main Grid: Featured + Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Featured Article */}
+          {/* Featured Carousel */}
           <div className="lg:col-span-2">
-            {featured ? (
-              <ArticleCard article={featured} variant="featured" />
+            {carouselArticles.length > 0 ? (
+              <NewsCarousel articles={carouselArticles} />
             ) : (
               <div className="h-[480px] rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                 <p className="text-zinc-400 dark:text-zinc-600 text-sm">Nenhum destaque disponível</p>
@@ -130,17 +119,6 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-
-        {/* News Carousel */}
-        {carouselArticles.length > 0 && (
-          <div className="mt-10">
-            <div className="flex items-center gap-2 mb-5">
-              <Zap className="w-4 h-4 text-red-600" />
-              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">Destaques</h2>
-            </div>
-            <NewsCarousel articles={carouselArticles} />
-          </div>
-        )}
 
         {/* Latest Articles Grid */}
         <div className="mt-14">
