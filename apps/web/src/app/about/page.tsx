@@ -41,10 +41,10 @@ const FEATURES = [
 ]
 
 const STACK = [
-  { label: 'Frontend', value: 'Next.js 14 · TypeScript · TailwindCSS · shadcn/ui' },
-  { label: 'Backend', value: 'NestJS · Prisma · PostgreSQL · Redis · BullMQ' },
-  { label: 'IA', value: 'OpenAI API · Resumos automáticos · Recomendações' },
-  { label: 'Infra', value: 'Docker · GitHub Actions · Vercel · Railway' },
+  { label: 'Frontend', value: 'Next.js 15 · TypeScript · TailwindCSS · shadcn/ui · TanStack Query' },
+  { label: 'Backend', value: 'NestJS · Prisma · PostgreSQL 16 · Redis · BullMQ' },
+  { label: 'IA', value: 'Google Gemini · Groq · Resumos automáticos · Auto-tagging' },
+  { label: 'Infra', value: 'Oracle Cloud VPS · Docker Swarm · Easypanel · GitHub Actions' },
 ]
 
 export default function AboutPage() {
@@ -98,8 +98,8 @@ export default function AboutPage() {
           <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-8 border border-zinc-100 dark:border-zinc-800">
             <div className="space-y-5">
               {[
-                { label: 'Artigos publicados', value: '1.200+' },
-                { label: 'Resumos gerados por IA', value: '1.200+' },
+                { label: 'Artigos publicados', value: '15+' },
+                { label: 'Resumos gerados por IA', value: '15+' },
                 { label: 'Categorias editoriais', value: '6' },
                 { label: 'Leitores cadastrados', value: 'Crescendo' },
               ].map((stat) => (
