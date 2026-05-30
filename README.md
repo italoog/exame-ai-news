@@ -293,7 +293,7 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/exame_news
 # JWT
 JWT_SECRET=seu-segredo-jwt-muito-longo-e-seguro
 JWT_REFRESH_SECRET=outro-segredo-refresh-muito-longo
-JWT_EXPIRES_IN=15m
+JWT_EXPIRES_IN=1h
 JWT_REFRESH_EXPIRES_IN=7d
 
 # Redis
