@@ -144,6 +144,11 @@ export class ArticlesService {
     })
   }
 
+  private calcReadTime(content: string): number {
+    const words = content.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length
+    return Math.max(1, Math.round(words / 200))
+  }
+
   async create(dto: CreateArticleDto, authorId: string) {
     const slug = await this.generateUniqueSlug(dto.title)
     const { tags, ...rest } = dto
@@ -154,6 +159,7 @@ export class ArticlesService {
         ...rest,
         slug,
         authorId,
+        readTime: dto.readTime ?? this.calcReadTime(dto.content),
         ...(tagIds.length > 0 && {
           tags: {
             create: tagIds.map((id) => ({ tag: { connect: { id } } })),
@@ -184,6 +190,7 @@ export class ArticlesService {
       where: { id },
       data: {
         ...rest,
+        ...(dto.content !== undefined && { readTime: dto.readTime ?? this.calcReadTime(dto.content) }),
         ...(tagIds !== undefined && {
           tags: {
             deleteMany: {},

@@ -15,6 +15,7 @@ type Article = {
   title: string
   slug: string
   summary: string | null
+  aiSummary: string | null
   coverImage: string | null
   publishedAt: string | null
   readTime: number | null
