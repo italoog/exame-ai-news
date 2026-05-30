@@ -3,3 +3,13 @@ pnpm --filter @exame/api exec prisma generate --silent 2>/dev/null || true
 pnpm --filter @exame/api exec tsc --noEmit
 pnpm --filter @exame/web exec tsc --noEmit
 echo "✅ Typecheck passou!"
+
+echo "🧪 Rodando testes..."
+pnpm --filter @exame/api test -- --passWithNoTests
+pnpm --filter @exame/web test
+echo "✅ Testes passaram!"
+
+echo "🏗️ Verificando build..."
+pnpm --filter @exame/api build
+pnpm --filter @exame/web build
+echo "✅ Build concluído!"
