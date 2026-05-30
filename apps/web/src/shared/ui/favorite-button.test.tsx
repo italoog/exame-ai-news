@@ -23,9 +23,9 @@ jest.mock('next/navigation', () => ({
 import { useAuthStore } from '@/shared/stores/auth.store'
 import { useCheckFavorite, useToggleFavorite } from '@/shared/hooks/use-favorites'
 
-const mockUseAuthStore = useAuthStore as jest.Mock
-const mockUseCheckFavorite = useCheckFavorite as jest.Mock
-const mockUseToggleFavorite = useToggleFavorite as jest.Mock
+const mockUseAuthStore = useAuthStore as unknown as jest.Mock
+const mockUseCheckFavorite = useCheckFavorite as unknown as jest.Mock
+const mockUseToggleFavorite = useToggleFavorite as unknown as jest.Mock
 
 describe('FavoriteButton', () => {
   const mockMutateAsync = jest.fn()
