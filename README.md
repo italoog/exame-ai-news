@@ -19,43 +19,47 @@ O projeto foi construído como monorepo com **Next.js 15** no frontend e **NestJ
 ## Stack Tecnológica
 
 ### Frontend — `apps/web`
-| Tecnologia | Uso |
-|-----------|-----|
+
+| Tecnologia                  | Uso                                                   |
+| --------------------------- | ----------------------------------------------------- |
 | **Next.js 15** (App Router) | Framework React com SSR, SSG, ISR e Server Components |
-| **TypeScript** (strict) | Tipagem estática em todo o frontend |
-| **TailwindCSS + shadcn/ui** | Design system e componentes |
-| **TanStack Query v5** | Cache de servidor, sincronização e mutações |
-| **Zustand** | Estado global (auth, tema) |
-| **React Hook Form + Zod** | Formulários com validação tipada |
-| **TipTap** | Editor de texto rico para artigos |
-| **Axios** | HTTP client com interceptors de auth |
-| **next-themes** | Dark/light mode persistente |
-| **Framer Motion** | Animações e transições |
+| **TypeScript** (strict)     | Tipagem estática em todo o frontend                   |
+| **TailwindCSS + shadcn/ui** | Design system e componentes                           |
+| **TanStack Query v5**       | Cache de servidor, sincronização e mutações           |
+| **Zustand**                 | Estado global (auth, tema)                            |
+| **React Hook Form + Zod**   | Formulários com validação tipada                      |
+| **TipTap**                  | Editor de texto rico para artigos                     |
+| **Axios**                   | HTTP client com interceptors de auth                  |
+| **next-themes**             | Dark/light mode persistente                           |
+| **Framer Motion**           | Animações e transições                                |
 
 ### Backend — `apps/api`
-| Tecnologia | Uso |
-|-----------|-----|
-| **NestJS** | Framework Node.js modular com DI e decorators |
-| **Prisma ORM** | Acesso ao banco, migrações e type-safety |
-| **PostgreSQL 16** | Banco de dados relacional principal |
-| **Redis 7** | Cache, sessões e filas |
-| **BullMQ** | Processamento assíncrono (IA, analytics, trending) |
-| **JWT + Refresh Tokens** | Autenticação stateless com rotação de tokens |
-| **Passport.js** | Estratégias de autenticação (local, jwt) |
-| **class-validator + class-transformer** | Validação de DTOs |
-| **Swagger/OpenAPI** | Documentação automática da API |
-| **Helmet + throttler** | Segurança e rate limiting |
-| **bcrypt** | Hash de senhas |
-| **Winston** | Logs estruturados |
+
+| Tecnologia                              | Uso                                                |
+| --------------------------------------- | -------------------------------------------------- |
+| **NestJS**                              | Framework Node.js modular com DI e decorators      |
+| **Prisma ORM**                          | Acesso ao banco, migrações e type-safety           |
+| **PostgreSQL 16**                       | Banco de dados relacional principal                |
+| **Redis 7**                             | Cache, sessões e filas                             |
+| **BullMQ**                              | Processamento assíncrono (IA, analytics, trending) |
+| **JWT + Refresh Tokens**                | Autenticação stateless com rotação de tokens       |
+| **Passport.js**                         | Estratégias de autenticação (local, jwt)           |
+| **class-validator + class-transformer** | Validação de DTOs                                  |
+| **Swagger/OpenAPI**                     | Documentação automática da API                     |
+| **Helmet + throttler**                  | Segurança e rate limiting                          |
+| **bcrypt**                              | Hash de senhas                                     |
+| **Winston**                             | Logs estruturados                                  |
 
 ### Infraestrutura
-| Tecnologia | Uso |
-|-----------|-----|
-| **Docker + Docker Compose** | Containerização multi-stage |
-| **Turborepo** | Orchestração do monorepo com builds incrementais |
-| **GitHub Actions** | CI (lint, typecheck, test, build) + CD automático |
-| **Easypanel** | Hosting em produção (Docker Swarm) |
-| **pnpm workspaces** | Gerenciamento de dependências do monorepo |
+
+| Tecnologia                  | Uso                                                              |
+| --------------------------- | ---------------------------------------------------------------- |
+| **Docker + Docker Compose** | Containerização multi-stage                                      |
+| **Turborepo**               | Orchestração do monorepo com builds incrementais                 |
+| **GitHub Actions**          | CI (lint, typecheck, test, build) + CD automático                |
+| **Easypanel**               | Hosting em produção (Docker Swarm)                               |
+| **pnpm workspaces**         | Gerenciamento de dependências do monorepo                        |
+| **Husky + lint-staged**     | Git hooks: pre-commit (ESLint + Prettier) e pre-push (typecheck) |
 
 ---
 
@@ -119,6 +123,7 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 ## Funcionalidades
 
 ### Portal de Notícias
+
 - **Homepage editorial** com artigo destaque, trending, últimas notícias e barra de categorias
 - **Feed infinito** de artigos com scroll infinito e filtros dinâmicos
 - **Página de artigo** com rich text, imagem de capa, tags, tempo de leitura, contador de views e comentários
@@ -128,19 +133,21 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 - **Dark mode** persistente via next-themes + Zustand
 
 ### Autenticação & Usuários
+
 - **Registro e login** com validação Zod
-- **JWT com Refresh Token rotation** — access token curto (1h), refresh token longo (7d)
-- **Logout com invalidação** do refresh token no banco
+- **JWT com Refresh Token rotation** — access token curto (1h), refresh token longo (7d); `refreshToken` persistido no localStorage; renovação automática via interceptor Axios (envia token no body, atualiza Zustand store e localStorage)
+- **Logout completo** — invalida refresh token no banco, limpa localStorage e estado Zustand
 - **Recuperação de senha** via e-mail (token único, TTL configurável)
 - **Perfil do usuário** com edição de nome, bio e avatar
 
 ### Pipeline Editorial
-| Role | Criar rascunho | Editar artigo | Publicar | Gerenciar usuários |
-|------|:-:|:-:|:-:|:-:|
-| **USER** | ❌ | ❌ | ❌ | ❌ |
-| **REDATOR** | ✅ | só os próprios | ❌ | ❌ |
-| **EDITOR** | ✅ | qualquer um | ✅ | ❌ |
-| **ADMIN** | ✅ | qualquer um | ✅ | ✅ |
+
+| Role        | Criar rascunho | Editar artigo  | Publicar | Gerenciar usuários |
+| ----------- | :------------: | :------------: | :------: | :----------------: |
+| **USER**    |       ❌       |       ❌       |    ❌    |         ❌         |
+| **REDATOR** |       ✅       | só os próprios |    ❌    |         ❌         |
+| **EDITOR**  |       ✅       |  qualquer um   |    ✅    |         ❌         |
+| **ADMIN**   |       ✅       |  qualquer um   |    ✅    |         ✅         |
 
 - **Editor rico** TipTap com formatação, listas, headings, links, negrito/itálico
 - **Fluxo de status**: `DRAFT` → `PUBLISHED` → `ARCHIVED` (ou `SCHEDULED`)
@@ -148,28 +155,33 @@ exame-ai-news/                   ← Monorepo raiz (Turborepo + pnpm)
 - **Dashboard do editor** com lista de artigos próprios e ações rápidas
 
 ### Inteligência Artificial
+
 - **AI Summary** — BullMQ job enfileira geração de resumo automático após publicação. Provedor primário: Gemini; fallback: Groq (llama-3.3-70b); exibido nos cards via `aiSummary` quando `summary` está vazio
 - **Auto-tagging** — análise de conteúdo para sugestão de tags relevantes
 - **Trending algorithm** — job periódico que calcula artigos em alta com base em views e tempo
 - **Recomendações** — engine baseada em histórico de leitura e preferências do usuário
 
 ### Analytics
+
 - **Rastreamento de eventos**: `view`, `read_complete`, `click`, `share`
 - **Dashboard admin** com top artigos, total de views, engajamento
 - **Read history** por usuário com tempo gasto e percentual lido
 - **Processamento assíncrono** via BullMQ para não impactar latência da API
 
 ### Favoritos & Interações
+
 - **Favoritar artigos** com toggle (add/remove) e verificação de estado
-- **Comentários aninhados** (parent/replies) com likes
+- **Comentários aninhados** — seção completa na página do artigo: formulário para novos comentários, respostas inline por comentário, curtidas e exclusão (próprio ou admin)
 - **Contadores em tempo real** de comentários e favoritos
 
 ### Admin Dashboard
+
 - **Gestão de artigos** (listar, filtrar por status, publicar, arquivar, deletar)
 - **Gestão de usuários** (listar, buscar, alterar role)
-- **Analytics global** da plataforma
+- **Analytics** (`/admin/analytics`) — top 10 artigos por views, comentários e favoritos com data de publicação e categoria
 
 ### Newsletter
+
 - **Inscrição de e-mail** com validação e rate limit (5 requisições/minuto)
 - Armazenamento de subscribers no banco
 
@@ -210,6 +222,7 @@ model NewsletterSubscriber { email (unique) }
 ```
 
 ### Índices de Performance
+
 - Articles: `(status, publishedAt DESC)`, `(categoryId, status)`, `(featured, status)`
 - Analytics: `(articleId, createdAt)`, `(eventType, createdAt)`
 - ReadHistory: `(userId, articleId UNIQUE)`
@@ -219,41 +232,44 @@ model NewsletterSubscriber { email (unique) }
 ## API — Endpoints
 
 ### Auth `/api/auth`
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| POST | `/register` | Registro de usuário |
-| POST | `/login` | Login (rate-limit: 10/min) |
-| POST | `/refresh` | Renovar access token |
-| POST | `/logout` | Invalidar refresh token |
-| POST | `/forgot-password` | Solicitar reset de senha |
-| POST | `/reset-password` | Confirmar novo password |
+
+| Método | Rota               | Descrição                  |
+| ------ | ------------------ | -------------------------- |
+| POST   | `/register`        | Registro de usuário        |
+| POST   | `/login`           | Login (rate-limit: 10/min) |
+| POST   | `/refresh`         | Renovar access token       |
+| POST   | `/logout`          | Invalidar refresh token    |
+| POST   | `/forgot-password` | Solicitar reset de senha   |
+| POST   | `/reset-password`  | Confirmar novo password    |
 
 ### Articles `/api/articles`
-| Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
-| GET | `/` | Listar com filtros (page, limit, category, tag, search, status) | Opcional |
-| GET | `/trending` | Top artigos por views | — |
-| GET | `/featured` | Artigos em destaque | — |
-| GET | `/:slug` | Artigo completo por slug | Opcional |
-| POST | `/` | Criar artigo | REDATOR+ |
-| PATCH | `/:id` | Atualizar artigo | REDATOR+ |
-| PATCH | `/:id/publish` | Publicar | EDITOR+ |
-| PATCH | `/:id/unpublish` | Despublicar | EDITOR+ |
-| PATCH | `/:id/archive` | Arquivar | EDITOR+ |
-| DELETE | `/:id` | Deletar | ADMIN |
+
+| Método | Rota             | Descrição                                                       | Auth     |
+| ------ | ---------------- | --------------------------------------------------------------- | -------- |
+| GET    | `/`              | Listar com filtros (page, limit, category, tag, search, status) | Opcional |
+| GET    | `/trending`      | Top artigos por views                                           | —        |
+| GET    | `/featured`      | Artigos em destaque                                             | —        |
+| GET    | `/:slug`         | Artigo completo por slug                                        | Opcional |
+| POST   | `/`              | Criar artigo                                                    | REDATOR+ |
+| PATCH  | `/:id`           | Atualizar artigo                                                | REDATOR+ |
+| PATCH  | `/:id/publish`   | Publicar                                                        | EDITOR+  |
+| PATCH  | `/:id/unpublish` | Despublicar                                                     | EDITOR+  |
+| PATCH  | `/:id/archive`   | Arquivar                                                        | EDITOR+  |
+| DELETE | `/:id`           | Deletar                                                         | ADMIN    |
 
 ### Outros módulos
-| Módulo | Rota base | Destaques |
-|--------|-----------|-----------|
-| Users | `/api/users` | CRUD, troca de role |
-| Categories | `/api/categories` | CRUD, busca por slug |
-| Tags | `/api/tags` | Listagem, populares |
-| Comments | `/api/articles/:id/comments` | CRUD, likes, aninhados |
-| Favorites | `/api/favorites` | Toggle, verificação de estado |
-| Analytics | `/api/analytics` | Eventos, dashboard, top articles |
-| Recommendations | `/api/recommendations` | For-you, popular, similar |
-| Newsletter | `/api/newsletter` | Subscribe (rate-limit: 5/min) |
-| Health | `/api/health` | Status dos serviços |
+
+| Módulo          | Rota base                    | Destaques                        |
+| --------------- | ---------------------------- | -------------------------------- |
+| Users           | `/api/users`                 | CRUD, troca de role              |
+| Categories      | `/api/categories`            | CRUD, busca por slug             |
+| Tags            | `/api/tags`                  | Listagem, populares              |
+| Comments        | `/api/articles/:id/comments` | CRUD, likes, aninhados           |
+| Favorites       | `/api/favorites`             | Toggle, verificação de estado    |
+| Analytics       | `/api/analytics`             | Eventos, dashboard, top articles |
+| Recommendations | `/api/recommendations`       | For-you, popular, similar        |
+| Newsletter      | `/api/newsletter`            | Subscribe (rate-limit: 5/min)    |
+| Health          | `/api/health`                | Status dos serviços              |
 
 > **Documentação interativa (Swagger):** [`/api/docs`](https://exame-ai-api.fzsuah.easypanel.host/api/docs)
 
@@ -262,6 +278,7 @@ model NewsletterSubscriber { email (unique) }
 ## Setup Local
 
 ### Pré-requisitos
+
 - Node.js 20+
 - pnpm 9+
 - Docker + Docker Compose
@@ -316,12 +333,12 @@ EMAIL_FROM=noreply@exame-ai.com
 
 ### Acessos Locais
 
-| Serviço | URL |
-|---------|-----|
-| Frontend | http://localhost:3000 |
-| API | http://localhost:3001/api |
-| Swagger | http://localhost:3001/api/docs |
-| Prisma Studio | http://localhost:5555 |
+| Serviço       | URL                            |
+| ------------- | ------------------------------ |
+| Frontend      | http://localhost:3000          |
+| API           | http://localhost:3001/api      |
+| Swagger       | http://localhost:3001/api/docs |
+| Prisma Studio | http://localhost:5555          |
 
 ---
 
@@ -347,14 +364,14 @@ make help         # Lista todos os comandos disponíveis
 
 ## Credenciais de Teste (produção e local)
 
-| Usuário | E-mail | Senha | Role |
-|---------|--------|-------|------|
-| Admin | admin@exame.com | Senha123! | ADMIN |
-| Editor 1 | editor1@exame.com | Senha123! | EDITOR |
-| Editor 2 | editor2@exame.com | Senha123! | EDITOR |
+| Usuário   | E-mail             | Senha     | Role    |
+| --------- | ------------------ | --------- | ------- |
+| Admin     | admin@exame.com    | Senha123! | ADMIN   |
+| Editor 1  | editor1@exame.com  | Senha123! | EDITOR  |
+| Editor 2  | editor2@exame.com  | Senha123! | EDITOR  |
 | Redator 1 | redator1@exame.com | Senha123! | REDATOR |
 | Redator 2 | redator2@exame.com | Senha123! | REDATOR |
-| Leitor | joao@email.com | Senha123! | USER |
+| Leitor    | joao@email.com     | Senha123! | USER    |
 
 ---
 
@@ -371,19 +388,29 @@ Oracle Cloud VPS — Ubuntu 24.04 LTS (163.176.191.113)
     └── exame-ai_redis    → Redis 7             (porta 6379)
 ```
 
+### Git Hooks (Husky)
+
+| Hook         | Trigger      | Validação                                                           |
+| ------------ | ------------ | ------------------------------------------------------------------- |
+| `pre-commit` | `git commit` | `lint-staged` — ESLint + Prettier nos arquivos staged (`.ts/.tsx`)  |
+| `pre-push`   | `git push`   | `tsc --noEmit` em api e web — bloqueia push com erros de TypeScript |
+
 ### CI/CD (GitHub Actions)
 
 **`.github/workflows/ci.yml`** — Roda em todo push/PR:
+
 1. `lint` — ESLint em todos os pacotes
 2. `type-check` — TypeScript strict em api e web
 3. `test` — Sobe PostgreSQL, migra e roda testes unitários
 4. `build` — Build de produção dos dois apps
 
 **`.github/workflows/deploy.yml`** — Roda no push para `main`:
+
 1. Dispara webhook de rebuild da API no Easypanel
 2. Dispara webhook de rebuild do Web no Easypanel
 
 ### Variáveis de Deploy (GitHub Secrets)
+
 ```
 EASYPANEL_DEPLOY_API_URL  → webhook de rebuild da API
 EASYPANEL_DEPLOY_WEB_URL  → webhook de rebuild do Web
@@ -393,18 +420,18 @@ EASYPANEL_DEPLOY_WEB_URL  → webhook de rebuild do Web
 
 ## Decisões Técnicas
 
-| Decisão | Motivação |
-|---------|-----------|
-| **Monorepo com Turborepo** | Builds incrementais, cache remoto e compartilhamento de configs/tipos |
-| **App Router (Next.js 15)** | Server Components por padrão para SEO e performance; Client Components só onde necessário |
-| **ISR com `revalidate`** | Homepage e artigos usam ISR (60s); trending usa 5min — equilibra performance e frescor dos dados |
-| **`NEXT_PUBLIC_*` em build-time** | `ARG/ENV` no Dockerfile garante que o bundle do cliente tenha a URL correta |
-| **BullMQ para IA** | Jobs pesados de IA não bloqueiam a request HTTP; processados em background |
-| **JWT + Refresh Rotation** | Access token curto (1h, configurável via `JWT_EXPIRES_IN`) reduz janela de ataque; refresh com rotação previne reuse |
-| **Repository Pattern (Prisma)** | Isola acesso a dados; facilita testes unitários com mocks |
-| **Índices compostos** | `(status, publishedAt)` e `(featured, status)` cobrem as queries mais frequentes |
-| **Docker multi-stage** | Imagem final sem devDependencies e sem código-fonte exposto |
-| **Internal Docker URL** | Comunicação server-side usa `http://exame-ai_api:3001` (DNS interno do Swarm) |
+| Decisão                           | Motivação                                                                                                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Monorepo com Turborepo**        | Builds incrementais, cache remoto e compartilhamento de configs/tipos                                                                                                                                               |
+| **App Router (Next.js 15)**       | Server Components por padrão para SEO e performance; Client Components só onde necessário                                                                                                                           |
+| **ISR com `revalidate`**          | Homepage e artigos usam ISR (60s); trending usa 5min — equilibra performance e frescor dos dados                                                                                                                    |
+| **`NEXT_PUBLIC_*` em build-time** | `ARG/ENV` no Dockerfile garante que o bundle do cliente tenha a URL correta                                                                                                                                         |
+| **BullMQ para IA**                | Jobs pesados de IA não bloqueiam a request HTTP; processados em background                                                                                                                                          |
+| **JWT + Refresh Rotation**        | Access token curto (1h, via `JWT_EXPIRES_IN`) reduz janela de ataque; refresh token (7d) armazenado no cliente e enviado no body — interceptor Axios renova automaticamente e limpa estado Zustand em caso de falha |
+| **Repository Pattern (Prisma)**   | Isola acesso a dados; facilita testes unitários com mocks                                                                                                                                                           |
+| **Índices compostos**             | `(status, publishedAt)` e `(featured, status)` cobrem as queries mais frequentes                                                                                                                                    |
+| **Docker multi-stage**            | Imagem final sem devDependencies e sem código-fonte exposto                                                                                                                                                         |
+| **Internal Docker URL**           | Comunicação server-side usa `http://exame-ai_api:3001` (DNS interno do Swarm)                                                                                                                                       |
 
 ---
 
@@ -424,7 +451,5 @@ src/modules/
 ├── ai/             ← OpenAI/Groq/Gemini + BullMQ Processors
 ├── notifications/  ← Serviço de notificações
 ├── newsletter/     ← Subscribers com rate-limit
-├── queue/          ← Setup BullMQ
-└── admin/          ← Dashboard admin (protegido por Role.ADMIN)
+└── queue/          ← Setup BullMQ
 ```
-
