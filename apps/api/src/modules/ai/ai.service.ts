@@ -3,7 +3,11 @@ import { ConfigService } from '@nestjs/config'
 import { InjectQueue } from '@nestjs/bullmq'
 import { Queue } from 'bullmq'
 import OpenAI from 'openai'
+import { Response } from 'express'
+import { PrismaService } from '../../database/prisma.service'
 import { QUEUE_AI_SUMMARY, QUEUE_TRENDING } from '../queue/queue.module'
+
+type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
 @Injectable()
 export class AiService {
@@ -13,6 +17,7 @@ export class AiService {
 
   constructor(
     private config: ConfigService,
+    private prisma: PrismaService,
     @InjectQueue(QUEUE_AI_SUMMARY) private aiSummaryQueue: Queue,
     @InjectQueue(QUEUE_TRENDING) private trendingQueue: Queue,
   ) {
@@ -124,6 +129,81 @@ export class AiService {
     }
 
     return this.localSummary(plainContent)
+  }
+
+  async streamChat(
+    articleId: string,
+    question: string,
+    history: ChatMessage[],
+    res: Response,
+  ): Promise<void> {
+    const article = await this.prisma.article.findUnique({
+      where: { id: articleId },
+      select: { title: true, content: true, summary: true, aiSummary: true },
+    })
+
+    if (!article) {
+      res.write('Artigo não encontrado.')
+      return
+    }
+
+    const plainContent = article.content
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 3000)
+
+    const systemPrompt = [
+      'Você é um assistente jornalístico da revista EXAME.',
+      'Responda perguntas sobre o artigo abaixo de forma concisa e em português.',
+      'Baseie-se apenas nas informações do artigo.',
+      'Se a resposta não estiver no artigo, diga que não encontrou essa informação no texto.',
+      '',
+      `ARTIGO: "${article.title}"`,
+      article.aiSummary ? `RESUMO: ${article.aiSummary}` : '',
+      `CONTEÚDO:\n${plainContent}`,
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...history.map((m) => ({ role: m.role, content: m.content })),
+      { role: 'user', content: question },
+    ]
+
+    // Usa Groq (fallback) como preferência para chat — mais confiável em produção
+    const provider = this.openaiGroq ?? this.openai
+    if (!provider) {
+      res.write('Serviço de IA não configurado.')
+      return
+    }
+
+    const isGroq = provider.baseURL?.includes('groq')
+    const isGemini = provider.baseURL?.includes('googleapis')
+    const model = isGroq
+      ? 'llama-3.3-70b-versatile'
+      : isGemini
+        ? 'gemini-2.0-flash'
+        : 'gpt-4o-mini'
+
+    try {
+      const stream = await provider.chat.completions.create({
+        model,
+        messages,
+        stream: true,
+        max_tokens: 500,
+        temperature: 0.3,
+      })
+
+      for await (const chunk of stream) {
+        const text = chunk.choices[0]?.delta?.content ?? ''
+        if (text) res.write(text)
+      }
+    } catch (err) {
+      this.logger.error('Erro no streaming do chat IA', err)
+      res.write('\n\nDesculpe, não consegui processar sua pergunta no momento.')
+    }
   }
 
   private localSummary(text: string): string {

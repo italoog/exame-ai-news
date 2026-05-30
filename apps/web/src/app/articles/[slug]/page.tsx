@@ -9,6 +9,7 @@ import DOMPurify from 'isomorphic-dompurify'
 import { CategoryBadge } from '@/shared/ui/category-badge'
 import { getCoverImage } from '@/shared/lib/cover-image'
 import { FavoriteButton } from '@/shared/ui/favorite-button'
+import { ArticleAiChat } from '@/shared/ui/article-ai-chat'
 
 export const revalidate = 60
 
@@ -203,6 +204,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </div>
         )}
+
+        {/* AI Chat */}
+        <ArticleAiChat articleId={article.id} />
       </div>
     </article>
   )
