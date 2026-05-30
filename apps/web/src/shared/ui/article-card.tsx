@@ -12,6 +12,7 @@ interface ArticleCardProps {
     title: string
     slug: string
     summary?: string | null
+    aiSummary?: string | null
     coverImage?: string | null
     publishedAt?: string | Date | null
     readTime?: number | null
@@ -63,8 +64,8 @@ export function ArticleCard({ article, variant = 'default', className }: Article
           <h2 className="text-2xl font-black text-white leading-tight tracking-tight line-clamp-3">
             {article.title}
           </h2>
-          {article.summary && (
-            <p className="mt-2 text-sm text-white/70 line-clamp-2">{article.summary}</p>
+          {(article.summary ?? article.aiSummary) && (
+            <p className="mt-2 text-sm text-white/70 line-clamp-2">{article.summary ?? article.aiSummary}</p>
           )}
           <div className="mt-4 flex items-center gap-3 text-white/60 text-xs">
             <span>{article.author.name}</span>
@@ -97,8 +98,8 @@ export function ArticleCard({ article, variant = 'default', className }: Article
         <h3 className="mt-2 text-base font-bold text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
           {article.title}
         </h3>
-        {article.summary && (
-          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">{article.summary}</p>
+        {(article.summary ?? article.aiSummary) && (
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">{article.summary ?? article.aiSummary}</p>
         )}
         <div className="mt-3 flex items-center gap-3 text-zinc-400 dark:text-zinc-500 text-xs">
           <span>{article.author.name}</span>
