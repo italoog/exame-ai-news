@@ -36,7 +36,7 @@ function StatCard({
 
 export default function AdminDashboardClient() {
   const { data, isLoading } = useAdminDashboard()
-  const stats = data?.data
+  const stats = data
 
   return (
     <div className="p-6">

@@ -13,7 +13,6 @@ import { TagsModule } from './modules/tags/tags.module'
 import { CommentsModule } from './modules/comments/comments.module'
 import { FavoritesModule } from './modules/favorites/favorites.module'
 import { AnalyticsModule } from './modules/analytics/analytics.module'
-import { AdminModule } from './modules/admin/admin.module'
 import { RecommendationsModule } from './modules/recommendations/recommendations.module'
 import { NotificationsModule } from './modules/notifications/notifications.module'
 import { NewsletterModule } from './modules/newsletter/newsletter.module'
@@ -43,7 +42,6 @@ import { envValidationSchema } from './config/env.validation'
     CommentsModule,
     FavoritesModule,
     AnalyticsModule,
-    AdminModule,
     RecommendationsModule,
     NotificationsModule,
     NewsletterModule,

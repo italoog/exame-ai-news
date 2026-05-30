@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Newspaper,
   Users,
+  BarChart2,
   Menu,
   X,
 } from 'lucide-react'
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/articles', label: 'Artigos', icon: Newspaper, exact: false },
   { href: '/admin/users', label: 'Usuários', icon: Users, exact: false },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart2, exact: false },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

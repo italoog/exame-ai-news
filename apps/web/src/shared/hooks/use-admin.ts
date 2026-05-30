@@ -9,6 +9,16 @@ export interface TopArticle {
   category?: { name: string }
 }
 
+export interface TopArticleDetail {
+  id: string
+  title: string
+  slug: string
+  viewCount: number
+  publishedAt: string | null
+  category?: { name: string; slug: string }
+  _count: { comments: number; favorites: number }
+}
+
 export interface DashboardStats {
   totalArticles: number
   totalUsers: number
@@ -17,9 +27,6 @@ export interface DashboardStats {
   topArticles: TopArticle[]
 }
 
-export interface DashboardResponse {
-  data: DashboardStats
-}
 
 export type ArticleStatus = 'PUBLISHED' | 'DRAFT' | 'ARCHIVED' | 'SCHEDULED'
 
@@ -56,11 +63,20 @@ export interface PaginatedResponse<T> {
   meta: PaginationMeta
 }
 
+export function useAdminTopArticles(limit = 10) {
+  return useQuery({
+    queryKey: ['admin-top-articles', limit],
+    queryFn: () =>
+      api.get<TopArticleDetail[]>('/analytics/top-articles', { params: { limit } }).then((r) => r.data),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
 export function useAdminDashboard() {
   return useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: () =>
-      api.get<DashboardResponse>('/analytics/dashboard').then((r) => r.data),
+      api.get<DashboardStats>('/analytics/dashboard').then((r) => r.data),
     staleTime: 1000 * 60 * 2,
   })
 }
